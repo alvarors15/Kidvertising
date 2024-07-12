@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/2.0.5/css/dataTables.bootstrap5.css" rel="stylesheet">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" rel="stylesheet" />
+
+
+<link rel="stylesheet" type="text/css" href="/resources/css/styles.css" />
+<link rel="stylesheet" type="text/css" href="/resources/css/footer.css" />
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.5/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.0.5/js/dataTables.bootstrap5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
+
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var childRoleTypeList = /*[[${childRoleTypeList}]]*/[];
+        /*]]>*/
+    </script>
+
+</head>
+
+<body>
+    <!-- CABECERA -->
+    <div th:replace="~{general :: navbar}"></div>
+
+
+
+    <div class="edit-ad-container p-5">
+        <div class="bg-white text-secondary mt-4">
+            <h2>Editar Anuncio</h2>
+        </div>
+
+        <!-- Formulario para editar el anuncio -->
+        <div class="edit-ad-container p-1">
+            <form id="editAdForm" class="form-horizontal" action="/guardarAnuncio" method="post"
+                enctype="multipart/form-data" th:action="@{/guardarAnuncio}" th:object="${ad}" style="width: 100%;">
+
+                <!-- Campo oculto para enviar el ID del anuncio -->
+                <input type="hidden" name="id" th:value="${ad.id}" />
+
+                <div class="container-new">
+                    <div class="row">
+                        <div class="col-md-8" style="width: 60%">
+                            <div style="text-align: right;" class="mb-4">
+                                <h3>*Es obligatorio indicar todos los campos</h3>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="year" class="form-label">Año:</label>
+                                        <select name="year" class="form-control custom-input form-select">
+                                            <option th:each="year : ${years}" th:value="${year}" th:text="${year}"
+                                                th:selected="${year == ad.year}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="budget" class="form-label">Presupuesto:</label>
+                                        <input type="text" class="form-control custom-input" id="budget" name="budget"
+                                            th:value="${ad.budget}" required
+                                            placeholder="Ingrese el presupuesto en formato numérico">
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="advertiser" class="form-label">Anunciante:</label>
+                                        <input type="text" class="form-control custom-input" id="advertiser"
+                                            name="advertiser" th:value="${ad.advertiser}" maxlength="250" required>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="product" class="form-label">Producto:</label>
+                                        <input type="text" class="form-control custom-input" id="product" name="product"
+                                            th:value="${ad.product}" maxlength="250" required>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="mediaType" class="form-label">Tipo de medio:</label>
+                                        <select id="mediaType" name="media"
+                                            class="form-control custom-input form-select" required>
+                                            <option selected value="">Seleccione una opción...</option>
+                                            <option th:each="mediaType : ${mediaTypeList}"
+                                                th:text="${mediaType.mediaType}" th:value="${mediaType.mediaType}"
+                                                th:selected="${mediaType.mediaType == ad.media}">
+                                            </option>
+                                            <option value="new">Añadir nueva opción...</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="mediaName" class="form-label">Nombre del medio:</label>
+                                        <select id="media" name="mediaName"
+                                            class="form-control custom-input form-select" required>
+                                            <option selected value="">Seleccione una opción...</option>
+                                            <option th:each="media : ${mediaList}" th:text="${media.mediaName}"
+                                                th:value="${media.mediaName}"
+                                                th:selected="${media.mediaName == ad.mediaName}"></option>
+                                            <option value="new">Añadir nueva opción...</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div id="newOptionFormMediaType" style="display: none;">
+                                        <div class="label-input-group" required>
+                                            <label for="mediaType" class="form-label"></label>
+                                            <input type="text"
+                                                class="form-control custom-input-new blink form-control-lg fs-4"
+                                                id="newOptionInputMediaType" name="mediaType"
+                                                placeholder="Indique el nuevo nombre del medio" maxlength="250"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div id="newOptionFormMedia" style="display: none;">
+                                        <div class="label-input-group" required>
+                                            <label for="mediaType" class="form-label"></label>
+                                            <input type="text"
+                                                class="form-control custom-input-new blink form-control-lg fs-4"
+                                                id="newOptionInputMedia" name="mediaName"
+                                                placeholder="Indique el nuevo medio" maxlength="250"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="adType" class="form-label">Tipo de publicidad:</label>
+                                        <select id="adType" name="adType" class="form-control custom-input form-select"
+                                            required>
+                                            <option selected>Seleccione una opción...</option>
+                                            <option value="Comercial" th:selected="${ad.adType == 'Comercial'}">
+                                                Comercial</option>
+                                            <option value="Institucional" th:selected="${ad.adType == 'Institucional'}">
+                                                Institucional</option>
+                                            <option value="Social" th:selected="${ad.adType == 'Social'}">Social
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="target" class="form-label">Público objetivo:</label>
+                                        <input type="text" class="form-control custom-input" id="target" name="target"
+                                            th:value="${ad.target}" maxlength="250" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="genderRoleFemaleType" class="form-label">Rol de la mujer:</label>
+                                        <select id="genderRoleFemaleType" name="genderRoleFemale"
+                                            class="form-control custom-input form-select" required>
+                                            <option selected value="">Seleccione una opción...</option>
+                                            <option th:each="genderRoleFemaleType : ${genderRoleFemaleTypeList}"
+                                                th:text="${genderRoleFemaleType.genderFemaleRole}"
+                                                th:value="${genderRoleFemaleType.genderFemaleRole}"
+                                                th:selected="${genderRoleFemaleType.genderFemaleRole == ad.genderRoleFemale}">
+                                            </option>
+                                            <option value="new">Añadir nueva opción...</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="genderRoleMaleType" class="form-label">Rol del hombre:</label>
+                                        <select id="genderRoleMaleType" name="genderRoleMale"
+                                            class="form-control custom-input form-select" required>
+                                            <option selected value="">Seleccione una opción...</option>
+                                            <option th:each="genderRoleMaleType : ${genderRoleMaleTypeList}"
+                                                th:text="${genderRoleMaleType.genderMaleRole}"
+                                                th:value="${genderRoleMaleType.genderMaleRole}"
+                                                th:selected="${genderRoleMaleType.genderMaleRole == ad.genderRoleMale}">
+                                            </option>
+                                            <option value="new">Añadir nueva opción...</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div id="newOptionFormFemaleRole" style="display: none;">
+                                        <div class="label-input-group">
+                                            <label for="newOptionFormFemaleRole" class="form-label"></label>
+                                            <input type="text"
+                                                class="form-control custom-input-new blink form-control-lg fs-4"
+                                                id="newOptionInputFemaleRole" name="genderRoleFemale"
+                                                placeholder="Indique el nuevo rol de la mujer" maxlength="250"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div id="newOptionFormMaleRole" style="display: none;">
+                                        <div class="label-input-group">
+                                            <label for="newOptionFormMaleRole" class="form-label"></label>
+                                            <input type="text"
+                                                class="form-control custom-input-new blink form-control-lg fs-4"
+                                                id="newOptionInputMaleRole" name="genderRoleMale"
+                                                placeholder="Indique el nuevo rol del hombre" maxlength="250"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="topic" class="form-label">Temática:</label>
+                                        <select id="topic" name="topicName"
+                                            class="form-control custom-input form-select" required>
+                                            <option selected value="">Seleccione una opción...</option>
+                                            <option th:each="topic : ${topicList}" th:text="${topic.topicName}"
+                                                th:value="${topic.topicName}"
+                                                th:selected="${topic.topicName == ad.topicName}"></option>
+                                            <option value="new">Añadir nueva opción...</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="genderRelation" class="form-label">Relación de género:</label>
+                                        <select id="genderRelation" name="genderRelation"
+                                            class="form-control custom-input form-select" required>
+                                            <option value="" selected>Seleccione una opción...</option>
+                                            <option value="Relación paritaria explícita"
+                                                th:selected="${ad.genderRelation == 'Relación paritaria explícita'}">
+                                                Relación paritaria explícita</option>
+                                            <option value="Relación paritaria implícita"
+                                                th:selected="${ad.genderRelation == 'Relación paritaria implícita'}">
+                                                Relación paritaria implícita</option>
+                                            <option value="Relación dominante explícita"
+                                                th:selected="${ad.genderRelation == 'Relación dominante explícita'}">
+                                                Relación dominante explícita</option>
+                                            <option value="Relación dominante implícita"
+                                                th:selected="${ad.genderRelation == 'Relación dominante implícita'}">
+                                                Relación dominante implícita</option>
+                                            <option value="No aparecen"
+                                                th:selected="${ad.genderRelation == 'No aparecen'}">No aparecen</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div id="newOptionFormTopic" style="display: none;">
+                                        <div class="label-input-group">
+                                            <label for="newOptionFormTopic" class="form-label"></label>
+                                            <input type="text"
+                                                class="form-control custom-input-new blink form-control-lg fs-4"
+                                                id="newOptionInputTopic" name="topicName"
+                                                placeholder="Indique la nueva temática" maxlength="250"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-md-6 mt-1">
+                                    <div class="label-input-group">
+                                        <label for="keyWords" class="form-label">Palabras clave:</label>
+                                        <select id="keyWords" multiple
+                                            class="chosen-select form-control custom-input form-select" name="keyWord"
+                                            data-placeholder="Escriba para filtrar...">
+                                            <option value=""></option>
+                                            <option th:each="keyWords : ${keyWordsList}" th:text="${keyWords.word}"
+                                                th:value="${keyWords.word}"
+                                                th:selected="${keyWordsSelectedList != null and !keyWordsSelectedList.isEmpty() ? #lists.contains(keyWordsSelectedList, keyWords.word) : false}">
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="label-input-group">
+                                        <div class="form-label-new" id="keywords-warning"
+                                            style="color: red; display: none;">Debe seleccionar al menos una palabra
+                                            clave.</div>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" id="hiddenKeyWords" name="keyWordsSelected" value="">
+
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="numeroMenores" class="form-label">Indique el numero de
+                                            menores:</label>
+                                        <select id="numeroMenores" name="numeroMenores"
+                                            class="form-control custom-input form-select">
+                                            <option value="1" th:selected="${numberOfChilds == 1}">1</option>
+                                            <option value="2" th:selected="${numberOfChilds == 2}">2</option>
+                                            <option value="3" th:selected="${numberOfChilds == 3}">3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h1 class="text-center">Menor 1</h1>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="label-input-group">
+                                        <label for="childRoleType" class="form-label">Rol del menor:</label>
+                                        <select id="childRoleType" name="childRole"
+                                            class="form-control custom-input form-select" required>
+                                            <option selected value="">Seleccione una opción...</option>
+                                            <option th:each="childRoleType : ${childRoleTypeList}"
+                                                th:text="${childRoleType.childRole}"
+                                                th:value="${childRoleType.childRole}"
+                                                th:selected="${childRoleType.childRole == ad.childRole}"></option>
+                                            <option value="new">Añadir nueva opción...</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="label-input-group">
+                                        <label for="gender" class="form-label">Género del menor:</label>
+                                        <select id="gender" name="childGender"
+                                            class="form-control custom-input form-select" required>
+                                            <option selected value="">Seleccione una opción...</option>
+                                            <option value="Masculino" th:selected="${ad.childGender == 'Masculino'}">
+                                                Masculino</option>
+                                            <option value="Femenino" th:selected="${ad.childGender == 'Femenino'}">
+                                                Femenino</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="label-input-group">
+                                        <label for="protagonism" class="form-label">Protagonismo:</label>
+                                        <select id="protagonism" name="protagonism"
+                                            class="form-control custom-input form-select" required>
+                                            <option selected value="">Seleccione una opción...</option>
+                                            <option value="Principal" th:selected="${ad.protagonism == 'Principal'}">
+                                                Principal</option>
+                                            <option value="Secundario" th:selected="${ad.protagonism == 'Secundario'}">
+                                                Secundario</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div id="newOptionFormChildRole" style="display: none;">
+                                        <div class="label-input-group">
+                                            <label for="newOptionFormChildRole" class="form-label"></label>
+                                            <input type="text"
+                                                class="form-control custom-input-new blink form-control-lg fs-4"
+                                                id="newOptionInputChildRole" name="childRole"
+                                                placeholder="Indique el nuevo rol" maxlength="250"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="menor2" style="display:none;">
+                                <h1 class="text-center">Menor 2</h1>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="label-input-group">
+                                            <label for="childRoleType2" class="form-label">Rol del menor:</label>
+                                            <select id="childRoleType2" name="childRole2"
+                                                class="form-control custom-input form-select">
+                                                <option selected value="">Seleccione una opción...</option>
+                                                <option th:each="childRoleType : ${childRoleTypeList}"
+                                                    th:text="${childRoleType.childRole}"
+                                                    th:value="${childRoleType.childRole}"
+                                                    th:selected="${childRoleType.childRole == ad.childRole2}"></option>
+                                                <option value="new">Añadir nueva opción...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="label-input-group">
+                                            <label for="childGender2" class="form-label">Género del menor:</label>
+                                            <select id="childGender2" name="childGender2"
+                                                class="form-control custom-input form-select">
+                                                <option selected value="">Seleccione una opción...</option>
+                                                <option value="Masculino"
+                                                    th:selected="${ad.childGender2 == 'Masculino'}">Masculino</option>
+                                                <option value="Femenino" th:selected="${ad.childGender2 == 'Femenino'}">
+                                                    Femenino</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="label-input-group">
+                                            <label for="protagonism2" class="form-label">Protagonismo:</label>
+                                            <select id="protagonism2" name="protagonism2"
+                                                class="form-control custom-input form-select">
+                                                <option selected value="">Seleccione una opción...</option>
+                                                <option value="Principal"
+                                                    th:selected="${ad.protagonism2 == 'Principal'}">Principal</option>
+                                                <option value="Secundario"
+                                                    th:selected="${ad.protagonism2 == 'Secundario'}">Secundario</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div id="newOptionFormChildRole2" class="new-option-form"
+                                            style="display: none;">
+                                            <div class="label-input-group">
+                                                <label for="newOptionFormChildRole2" class="form-label"></label>
+                                                <input type="text"
+                                                    class="form-control custom-input-new blink form-control-lg fs-4"
+                                                    id="newOptionInputChildRole2" name="childRole2"
+                                                    placeholder="Indique el nuevo rol" maxlength="250"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="menor3" style="display:none;">
+                                <h1 class="text-center">Menor 3</h1>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="label-input-group">
+                                            <label for="childRoleType3" class="form-label">Rol del menor:</label>
+                                            <select id="childRoleType3" name="childRole3"
+                                                class="form-control custom-input form-select">
+                                                <option selected value="">Seleccione una opción...</option>
+                                                <option th:each="childRoleType : ${childRoleTypeList}"
+                                                    th:text="${childRoleType.childRole}"
+                                                    th:value="${childRoleType.childRole}"
+                                                    th:selected="${childRoleType.childRole == ad.childRole3}"></option>
+                                                <option value="new">Añadir nueva opción...</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="label-input-group">
+                                            <label for="childGender3" class="form-label">Género del menor:</label>
+                                            <select id="childGender3" name="childGender3"
+                                                class="form-control custom-input form-select">
+                                                <option selected value="">Seleccione una opción...</option>
+                                                <option value="Masculino"
+                                                    th:selected="${ad.childGender3 == 'Masculino'}">Masculino</option>
+                                                <option value="Femenino" th:selected="${ad.childGender3 == 'Femenino'}">
+                                                    Femenino</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <div class="label-input-group">
+                                            <label for="protagonism3" class="form-label">Protagonismo:</label>
+                                            <select id="protagonism3" name="protagonism3"
+                                                class="form-control custom-input form-select">
+                                                <option selected value="">Seleccione una opción...</option>
+                                                <option value="Principal"
+                                                    th:selected="${ad.protagonism3 == 'Principal'}">Principal</option>
+                                                <option value="Secundario"
+                                                    th:selected="${ad.protagonism3 == 'Secundario'}">Secundario</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div id="newOptionFormChildRole3" class="new-option-form"
+                                            style="display: none;">
+                                            <div class="label-input-group">
+                                                <label for="newOptionFormChildRole3" class="form-label"></label>
+                                                <input type="text"
+                                                    class="form-control custom-input-new blink form-control-lg fs-4"
+                                                    id="newOptionInputChildRole3" name="childRole3"
+                                                    placeholder="Indique el nuevo rol" maxlength="250"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="objective" class="form-label-all">Objetivo:</label>
+                                        <textarea type="text" class="form-control custom-input" id="objective"
+                                            name="objective" th:text="${ad.objective}" required style="height: 150px;" maxlength="1000"
+                                            th:value="${ad.objective}" placeholder="Describa el objetivo del anuncio con un máximo 1000 caracteres"></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="label-input-group">
+                                        <label for="synopsis" class="form-label-all">Sinopsis:</label>
+                                        <textarea type="text" class="form-control custom-input" id="synopsis"
+                                            name="synopsis" th:text="${ad.synopsis}" required style="height: 150px;" maxlength="1000"
+                                            th:value="${ad.synopsis}" placeholder="Describa en que consiste el anuncio con un máximo 1000 caracteres"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <input type="hidden" name="userEmail" th:value="${ad.userEmail}" />
+
+                            <input type="hidden" name="modificationDate" id="modificationDate"
+                                th:value="${ad.modificationDate}" />
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="label-input-group">
+                                        <label for="file" class="form-label-new">Subir archivo multimedia. Se
+                                            permiten imágenes, videos y audios</label>
+                                        <input class="form-control" style="max-height: 100%; width: 100%;" type="file"
+                                            id="file" name="file" accept="image/*,video/*,audio/*">
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end;">
+                                <button class="btn btn-success btn-lg" type="submit">Guardar Cambios</button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 image-preview-container" style="width: 40%">
+                            <img id="image-preview" src="#" alt="Vista previa de la imagen"
+                                style="max-width: 500px; display: none;">
+                            <video id="video-preview" controls style="width: 500px; display: none;">
+                                <source src="#" type="video/mp4">Tu navegador no soporta el elemento de video.
+                            </video>
+                            <audio id="audio-preview" controls style="display: none;">
+                                <source src="#" type="audio/mpeg">Tu navegador no soporta el elemento de audio.
+                            </audio>
+                        </div>
+                    </div>
+                </div>
+
+
+            </form>
+        </div>
+
+
+</body>
+
+<!-- Script para mostrar los inputs y obtener su valor cuando se agregan nuevas categorias-->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        handleFieldChange('childRoleType', 'newOptionFormChildRole', 'newOptionInputChildRole');
+        handleFieldChange('childRoleType2', 'newOptionFormChildRole2', 'newOptionInputChildRole2');
+        handleFieldChange('childRoleType3', 'newOptionFormChildRole3', 'newOptionInputChildRole3');
+        handleFieldChange('genderRoleMaleType', 'newOptionFormMaleRole', 'newOptionInputMaleRole');
+        handleFieldChange('genderRoleFemaleType', 'newOptionFormFemaleRole', 'newOptionInputFemaleRole');
+        handleFieldChange('media', 'newOptionFormMedia', 'newOptionInputMedia');
+        handleFieldChange('mediaType', 'newOptionFormMediaType', 'newOptionInputMediaType');
+        handleFieldChange('topic', 'newOptionFormTopic', 'newOptionInputTopic');
+    });
+
+    function handleFieldChange(fieldId, newOptionFormId, newOptionInputId) {
+        var field = document.getElementById(fieldId);
+        var newOptionForm = document.getElementById(newOptionFormId);
+
+        field.addEventListener('change', function () {
+            var selectedOption = this.value;
+            if (selectedOption === 'new') {
+                newOptionForm.style.display = 'block';
+                document.getElementById(newOptionInputId).required = true;
+            } else {
+                newOptionForm.style.display = 'none';
+                document.getElementById(newOptionInputId).required = false;
+                document.getElementById(newOptionInputId).value = '';
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var form = document.getElementById('editAdForm');
+        form.addEventListener('submit', function (event) {
+            handleNewSelection('mediaType', 'newOptionInputMediaType', 'media');
+
+            handleNewSelection('media', 'newOptionInputMedia', 'mediaName');
+
+            handleNewSelection('genderRoleMaleType', 'newOptionInputMaleRole', 'genderRoleMale');
+
+            handleNewSelection('genderRoleFemaleType', 'newOptionInputFemaleRole', 'genderRoleFemale');
+
+            handleNewSelection('childRoleType', 'newOptionInputChildRole', 'childRole');
+
+            handleNewSelection('childRoleType2', 'newOptionInputChildRole2', 'childRole2');
+
+            handleNewSelection('childRoleType3', 'newOptionInputChildRole3', 'childRole3');
+
+            handleNewSelection('topic', 'newOptionInputTopic', 'topicName');
+        });
+    });
+
+    function handleNewSelection(selectId, inputId, nameForSubmission) {
+        var selectElement = document.getElementById(selectId);
+        var inputElement = document.getElementById(inputId);
+        if (selectElement && inputElement && selectElement.value === 'new') {
+            selectElement.removeAttribute('name');
+            inputElement.setAttribute('name', nameForSubmission);
+        }
+    }
+
+</script>
+
+<!-- Script para controlar el parpadeo del input de agregar nueva categoria -->
+<script>
+    $(document).ready(function () {
+        $('.custom-input-new').on('input', function () {
+            if ($(this).val().trim() !== '') {
+                $(this).removeClass('blink'); // Quita la clase que causa la animacion
+            } else {
+                $(this).addClass('blink'); // Aniade la clase de nuevo si se elimina el texto
+            }
+        });
+    });
+</script>
+
+<!-- Script para permitir solo numeros en el presupuesto -->
+<script>
+    document.getElementById('budget').addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9]/g, ''); 
+    });
+</script>
+
+<!-- Script para no enviar el formulario si no se indican palabras clave -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("editAdForm");
+        const keyWordsSelect = document.getElementById("keyWords");
+        const warningMessage = document.getElementById("keywords-warning");
+
+        form.addEventListener("submit", function (event) {
+            let isValid = true;
+
+            if (keyWordsSelect.selectedOptions.length === 0) {
+                keyWordsSelect.style.borderColor = "red";
+                warningMessage.style.display = "block";
+                isValid = false;
+            } else {
+                keyWordsSelect.style.borderColor = "";
+                warningMessage.style.display = "none";
+            }
+
+            if (!isValid) {
+                event.preventDefault();
+            } else {
+                var selectedKeyWords = $('#keyWords').chosen().val();
+
+                var selectedKeyWords = $('#keyWords').chosen().val();
+                //Pasamos el valor a hiddenKeyWords que sera lo que le indiquemos luego al controller
+                $('#hiddenKeyWords').val(selectedKeyWords.join(','));
+
+
+                var selects = form.querySelectorAll('select');
+                selects.forEach(function (select) {
+                    select.value = select.value.replace(/,$/, ''); // Elimina comas al final del valor
+                });
+            }
+        });
+    });
+</script>
+
+<!-- Script para mostrar los inputs de menor 2 y 3 si el anuncio los tiene -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectNumMenores = document.getElementById('numeroMenores');
+
+        selectNumMenores.addEventListener('change', function () {
+            const numMenores = parseInt(this.value, 10);
+
+            function updateRequiredFields(div, shouldBeRequired) {
+                div.querySelectorAll('select, input[type="text"]').forEach(input => {
+                    if (input.id !== 'newOptionInputChildRole2' && input.id !== 'newOptionInputChildRole3') {
+
+                        if (shouldBeRequired) {
+                            input.required = true;
+                        } else {
+                            input.required = false;
+                            input.value = '';
+                        }
+                    }
+                });
+            }
+
+            for (let i = 2; i <= 3; i++) {
+                const div = document.getElementById(`menor${i}`);
+                if (i <= numMenores) {
+                    div.style.display = '';
+                    updateRequiredFields(div, true);
+                } else {
+                    div.style.display = 'none';
+                    updateRequiredFields(div, false);
+                }
+            }
+        });
+
+        selectNumMenores.dispatchEvent(new Event('change'));
+    });
+
+</script>
+
+<!-- Script para mostrar inicialmente el archivo que tiene el anuncio -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var initialmediaUrl = /*[[${mediaUrl}]]*/  // Inserta la URL de la foto desde el modelo
+    document.addEventListener('DOMContentLoaded', function () {
+        function setPreview(url, type) {
+            const imagePreview = document.getElementById('image-preview');
+            const videoPreview = document.getElementById('video-preview');
+            const audioPreview = document.getElementById('audio-preview');
+
+            imagePreview.style.display = 'none';
+            videoPreview.style.display = 'none';
+            audioPreview.style.display = 'none';
+
+            switch (type) {
+                case 'image':
+                    imagePreview.src = url;
+                    imagePreview.style.display = 'block';
+                    break;
+                case 'video':
+                    videoPreview.querySelector('source').src = url;
+                    videoPreview.style.display = 'block';
+                    videoPreview.load();
+                    break;
+                case 'audio':
+                    audioPreview.querySelector('source').src = url;
+                    audioPreview.style.display = 'block';
+                    audioPreview.load();
+                    break;
+            }
+        }
+
+        if (initialmediaUrl) {
+            var initialType = initialmediaUrl.split('.').pop().split('?')[0];
+            initialType = initialType.match(/(jpg|jpeg|png)$/i) ? 'image' :
+                initialType.match(/(mp4|avi)$/i) ? 'video' :
+                    initialType.match(/(mp3|wav)$/i) ? 'audio' : '';
+            if (initialType) {
+                setPreview(initialmediaUrl, initialType);
+            }
+        }
+
+        document.getElementById('file').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const type = file.type.split('/')[0];
+            const url = URL.createObjectURL(file);
+            setPreview(url, type);
+        });
+    });
+    /*]]>*/
+</script>
+
+
+
+<!--Script para poder aniadir mas palabras clave al pulsar Enter -->
+<script>
+    $(".chosen-select").chosen({
+        no_results_text: "Pulsa Enter para añadir: "
+    })
+
+    $(document).ready(function () {
+        $(".chosen-select").chosen();
+
+        $('.chosen-container').on('keydown', function (e) {
+            if (e.which === 13) { // Tecla Enter
+                e.preventDefault();
+                e.stopPropagation();
+                var target = $(e.target);
+                var newOptionText = target.val().trim(); // Obtener el texto ingresado
+                var validText = newOptionText.replace(/[^a-zA-Z]/g, '');
+
+                if (validText !== "") {
+                    var newOptionValue = validText.toLowerCase();
+                    // Comprobar si la opcion ya existe para evitar duplicados
+                    if ($('.chosen-select').find("option[value='" + newOptionValue + "']").length === 0) {
+                        $('.chosen-select').append($('<option>', {
+                            value: newOptionValue,
+                            text: validText,
+                            selected: true
+                        }));
+
+                        setTimeout(function () {
+                            $('.chosen-select').trigger("chosen:updated");
+                            target.val(""); // Limpiar el campo de busqueda despues de aniadir
+                        }, 100);
+                    }
+
+                }
+
+                return false;
+            }
+        });
+    });
+</script>
+
+</html>

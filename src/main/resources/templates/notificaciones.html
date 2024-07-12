@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Notificaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/2.0.5/css/dataTables.bootstrap5.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/resources/css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="/resources/css/footer.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Indicar tamanio de la fuente de la tabla -->
+    <style>
+        .table td,
+        .table th {
+            font-size: 15px;
+        }
+    </style>
+
+    <!-- Script para cargar la tabla de notificaciones -->
+    <script>
+        $(document).ready(function () {
+            var table = new DataTable('#myTable', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.5/i18n/es-ES.json',
+                },
+                "bAutoWidth": false,
+                //Indicamos el tamanio de las columnas
+                columnDefs: [
+                    { width: "10%", targets: [0] },
+                    { width: "40%", targets: [1] },
+                    { width: "15%", targets: [2] },
+                    { width: "25%", targets: [3] }
+
+                ],
+                "initComplete": function (settings, json) {
+                    applyFilters();
+                }
+            });
+            // Evento de cambio para los checkboxes de estados de las notificaciones del profesor
+            $('input[name="notificationFilter"]').on('change', function () {
+                $('input[name="notificationFilter"]').not(this).prop('checked', false);
+                applyFilters();
+            });
+
+            //Aplicar filtros para mostrar las notificaciones del profesor segun su estado
+            function applyFilters() {
+                $.fn.dataTable.ext.search.push(
+                    function (settings, data, dataIndex) {
+                        var notificationFilter = $('input[name="notificationFilter"]:checked').val();
+                        var notificationText = data[2];
+
+                        if (!notificationFilter) {
+                            return true; // Si ningun filtro está activo, muestra todas las filas
+                        }
+
+                        // Compara el estado con el valor de la fila
+                        return (notificationFilter === 'PENDING' && notificationText === 'Pendiente') ||
+                            (notificationFilter === 'ALL' && (notificationText === 'Pendiente' || notificationText === 'Aprobada' || notificationText === 'Rechazada'))
+                            || (notificationFilter === 'CHECKED' && (notificationText === 'Aprobada' || notificationText === 'Rechazada'));
+                    }
+                );
+
+                table.draw();
+            }
+
+            // Evento de cambio para los checkboxes de estados de las notificaciones del alumno
+            $('input[name="notificationAlumnFilter"]').on('change', function () {
+                $('input[name="notificationAlumnFilter"]').not(this).prop('checked', false);
+                applyFiltersAlumn();
+            });
+
+            //Aplicar filtros para mostrar las notificaciones del alumno segun su estado
+            function applyFiltersAlumn() {
+                $.fn.dataTable.ext.search.push(
+                    function (settings, data, dataIndex) {
+                        var notificationAlumnFilter = $('input[name="notificationAlumnFilter"]:checked').val();
+                        var notificationText = data[1];
+
+                        if (!notificationAlumnFilter) {
+                            return true; // Si ningún filtro esta activo, muestra todas las filas
+                        }
+                        // Compara el estado con el valor de la fila
+                        return (notificationAlumnFilter === 'APPROVED' && notificationText === 'Aprobada') ||
+                            (notificationAlumnFilter === 'REJECTED' && notificationText === 'Rechazada');
+                    }
+                );
+
+                table.draw();
+            }
+        });
+
+
+    </script>
+</head>
+
+<body>
+
+
+    <!-- CABECERA -->
+    <div th:replace="~{general :: navbar}"></div>
+
+    <div id="content">
+
+        <!-- Modal que informa si se ha enviado la solicitud correctamente -->
+        <div class="modal fade custom-modal" id="responseModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title" id="exampleModalLabel"></h1>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body fs-3">
+                        <p th:if="${successMessage}" th:text="${successMessage}"></p>
+                        <p th:if="${errorMessage}" th:text="${errorMessage}"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary fs-3" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de confirmacion de eliminar -->
+        <div class="modal fade custom-modal" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title" id="confirmModalLabel">Confirmar eliminación</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body fs-3">
+                        ¿Estás seguro de que deseas eliminar estas solicitudes?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary fs-3 me-5" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger fs-3" id="deleteBtn"
+                            onclick="submitDeleteForm()">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white text-secondary ms-5 mt-5">
+            <h2>Notificaciones</h2>
+        </div>
+        <div class="notificationList" id="notificationList" style="width:100%">
+            <div class="container-fluid p-5 bg-white">
+               <!-- Notificaciones del profesor  --> 
+                <div sec:authorize="hasRole('PROFESOR')">
+                    <form id="deleteNotificationForm" th:action="@{/notificaciones/eliminarNotificaciones}"
+                        method="post">
+                        <!-- Checkbox para indicar el estado de las notificaciones --> 
+                        <div class="d-flex justify-content-between mb-2">
+                            <div class="d-flex justify-content-start filter-checkboxes">
+                                <div class="ms-4 fs-4">
+                                    <input type="checkbox" id="showPending" name="notificationFilter" value="PENDING"
+                                        checked>
+                                    <label for="showPending">Mostrar pendientes</label>
+                                </div>
+                                <div class="ms-4 fs-4">
+                                    <input type="checkbox" id="showChecked" name="notificationFilter" value="CHECKED">
+                                    <label for="showChecked">Mostrar comprobadas</label>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-lg" onclick="checkNotificationsSelected()">
+                                Eliminar Notificaciones Seleccionadas
+                            </button>
+                        </div>
+
+                        <!-- TABLA DE NOTIFICACIONES -->
+                        <div class="table-responsive">
+                            <table id="myTable" class="table table-striped" style="min-width: 95%; max-width: 100%;">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="text-center">Seleccionar</th>
+                                        <th scope="col" class="text-center">Mensaje</th>
+                                        <th scope="col" class="text-center">Estado</th>
+                                        <th scope="col" class="text-center">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="notification : ${notificationList}">
+                                        <td><input type="checkbox" name="notificationIds" th:value="${notification.id}">
+                                        </td>
+                                        <td class="text-center single-line">
+                                            <span>
+                                                El usuario
+                                                <a th:href="@{/anunciosUsuario?userId={userId}(userId=${notification.userId})}"
+                                                    th:text="${notification.username}" class="link-custom">Username</a>
+                                                ha solicitado poder editar este
+                                                <a th:href="@{/detalleAnuncio?adId={adId}(adId=${notification.adId})}"
+                                                    th:text="'anuncio '" class="link-custom">Anuncio Link</a>
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <span
+                                                th:text="${notification.status == 'APPROVED' ? 'Aprobada' : notification.status == 'REJECTED' ? 'Rechazada' : 'Pendiente'}"
+                                                th:class="${notification.status == 'APPROVED' ? 'status-approved' : 
+                     notification.status == 'REJECTED' ? 'status-rejected' : 'status-pending'}">></span>
+                                        </td>
+                                        <td class="text-center single-line">
+                                            <div th:if="${notification.status == 'PENDING'}"
+                                                class="d-flex justify-content-center">
+                                                <a th:href="@{/notificaciones/aprobarNotificacion/{id}(id=${notification.id})}"
+                                                    class="btn btn-success me-5" title="Aprobar">APROBAR
+                                                </a>
+                                                <a th:href="@{/notificaciones/rechazarNotificacion/{id}(id=${notification.id})}"
+                                                    class="btn btn-danger" title="Rechazar">RECHAZAR
+                                                </a>
+                                            </div>
+                                            <div th:if="${notification.status != 'PENDING'}">
+                                                <span th:text="${notification.status == 'APPROVED' ? 'Esta solicitud se aprobó el día ' + #dates.format(notification.checkedDate, 'dd/MM/yyyy') : 
+                                            notification.status == 'REJECTED' ? 'Esta solicitud se rechazó el día ' + #dates.format(notification.checkedDate, 'dd/MM/yyyy') : 
+                                            'Esta solicitud está pendiente'}" th:class="${notification.status == 'APPROVED' ? 'status-approved' : 
+                                             notification.status == 'REJECTED' ? 'status-rejected' : 
+                                             'status-pending'}">></span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>        
+                    </form>
+                </div>
+                <!-- Notificaciones del alumno  --> 
+                <div sec:authorize="hasRole('ALUMNO')">
+
+                    <!-- Checkbox para indicar el estado de las notificaciones --> 
+                    <div class="d-flex justify-content-start filter-checkboxes">
+                        <div class="ms-4 fs-4">
+                            <input type="checkbox" id="showApproved" name="notificationAlumnFilter" value="APPROVED">
+                            <label for="showApproved">Mostrar aceptadas</label>
+                        </div>
+                        <div class="ms-4 fs-4">
+                            <input type="checkbox" id="showRejected" name="notificationAlumnFilter" value="REJECTED">
+                            <label for="showRejected">Mostrar rechazadas</label>
+                        </div>
+                    </div>
+
+                    <!-- TABLA DE NOTIFICACIONES -->
+                    <div class="table-responsive">
+                        <table id="myTable" class="table table-striped" style="min-width: 95%; max-width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="text-center message-column">Mensaje</th>
+                                    <th scope="col" class="text-center">Estado</th>
+                                    <th scope="col" class="text-center">Fecha Resolución</th>
+                                    <th scope="col" class="text-center">Fecha Finalización</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="notification : ${notificationList}">
+                                    <td class="text-center single-line message-column">
+                                        <div th:if="${notification.status == 'APPROVED'}">
+                                            <span>
+                                                La solicitud para editar este
+                                                <a th:href="@{/detalleAnuncio(adId=${notification.adId})}"
+                                                    th:text="'anuncio'" class="link-custom">anuncio</a>
+                                                se ha aprobado, dispone de 7 días desde la resolución para editarlo.
+                                            </span>
+                                        </div>
+                                        <div th:if="${notification.status == 'REJECTED'}">
+                                            <span>
+                                                La solicitud para editar este
+                                                <a th:href="@{/detalleAnuncio(adId=${notification.adId})}"
+                                                    th:text="'anuncio'" class="link-custom">anuncio</a>
+                                                se ha rechazado.
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span
+                                            th:text="${notification.status == 'APPROVED' ? 'Aprobada' : notification.status == 'REJECTED' ? 'Rechazada' : 'Pendiente'}"
+                                            th:class="${notification.status == 'APPROVED' ? 'status-approved' : 
+                 notification.status == 'REJECTED' ? 'status-rejected' : 'status-pending'}">></span>
+                                    </td>
+                                    <!-- Si esta aprobada mostramos la fecha de aprobacion -->
+                                    <td class="text-center"
+                                        th:text="${#dates.format(notification.checkedDate, 'dd-MM-yyyy')}">
+                                    </td>
+                                    <td class="text-center">
+                                        <!-- Si esta aprobada mostramos la fecha hasta la que se puede editar el anuncio -->
+                                        <div th:if="${notification.status == 'APPROVED'}" class="resolutionDate">
+                                            <span hidden th:text="${notification.checkedDate}"></span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <div th:replace="~{general :: footer}"></div>
+
+
+    <!--Script para obtener la fecha hasta que se puede editar el anuncio-->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var dateDivs = document.querySelectorAll('.resolutionDate');
+            dateDivs.forEach(function (div) {
+                var dateSpan = div.querySelector('span');
+                if (dateSpan.textContent.trim() !== "") {
+                    var originalDate = dateSpan.textContent;
+                    var date = new Date(originalDate);
+                    date.setDate(date.getDate() + 7); // Sumar 7 dias
+
+                    // Formatear fecha como DD-MM-YYYY
+                    var dd = String(date.getDate()).padStart(2, '0');
+                    var mm = String(date.getMonth() + 1).padStart(2, '0');
+                    var yyyy = date.getFullYear();
+                    var formattedDate = dd + '-' + mm + '-' + yyyy;
+                    div.textContent = formattedDate;
+                }
+            });
+        });
+    </script>
+
+    <!-- Script para enviar el formulario de eliminacion de notificaciones-->
+    <script>
+        //Abre el modal de confirmacion solo si hay notificaciones seleccionadas
+        function checkNotificationsSelected() {
+            // Selecciona todos los checkboxes de notificaciones
+            const checkboxes = document.querySelectorAll('input[name="notificationIds"]:checked');
+
+        // Verifica si hay al menos un checkbox seleccionado
+        if (checkboxes.length > 0) {
+            // Mostrar el modal
+            var modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+            modal.show();
+        }
+    }
+
+    function submitDeleteForm() {
+        // Enviar el formulario
+        document.getElementById('deleteNotificationForm').submit();
+    }
+    </script>
+
+</body>
+</div>
+
+</html>

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Anuncios</title>
+    <link rel="stylesheet" type="text/css" href="/resources/css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="/resources/css/footer.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/2.0.5/css/dataTables.bootstrap5.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.5/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.0.5/js/dataTables.bootstrap5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.0/lazysizes.min.js" async></script>
+
+
+    <!-- Script Para cargar la tabla y aplicar los filtros -->
+    <script>
+        $(document).ready(function () {
+            var table = new DataTable('#myTable', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.5/i18n/es-ES.json',
+                },
+                columnDefs: [
+                    {
+                        targets: [15, 16],
+                        visible: false,
+                        searchable: false
+                    }
+                ],
+                paging: true,
+                scrollCollapse: true,
+                scroller: true,
+                deferRender: true,
+            });
+
+            // Funcion para aplicar los filtros seleccionados
+            window.applyFilters = function () {
+                // Obtener el valor de cada filtro
+                var startYear = $('#startYear').val();
+                var endYear = $('#endYear').val();
+                var mediaType = $('#mediaTypeFilter').val();
+                var media = $('#mediaFilter').val();
+                var genderRoleMaleType = $('#genderRoleMaleTypeFilter').val();
+                var genderRoleFemaleType = $('#genderRoleFemaleTypeFilter').val();
+                var childRoleType = $('#childRoleTypeFilter').val();
+
+                // Limpiar todos los filtros existentes
+                $.fn.dataTable.ext.search.length = 0;
+
+                // Filtrar por rango de anios
+                $.fn.dataTable.ext.search.push(
+                    function (settings, data, dataIndex) {
+                        var year = parseInt(data[0], 10);
+                        if (year >= parseInt(startYear, 10) && year <= parseInt(endYear, 10)) {
+                            return true;
+                        }
+                        return false;
+                    }
+                );
+
+                // Filtrar por tipo de archivo multimedia
+                $.fn.dataTable.ext.search.push(
+                    function (settings, data, dataIndex) {
+                        var fileType = $('#multimediaFilter').val();
+
+                        var row = table.row(dataIndex).node();
+                        var fileColumn = $(row).find('td[data-url]').data('url');
+
+                        if (!fileType) {
+                            return true;
+                        }
+
+                        switch (fileType) {
+                            case 'image':
+                                return fileColumn.endsWith('.jpg') || fileColumn.endsWith('.png') || fileColumn.endsWith('.jpeg');
+                            case 'video':
+                                return fileColumn.endsWith('.mp4') || fileColumn.endsWith('.webm');
+                            case 'audio':
+                                return fileColumn.endsWith('.mp3') || fileColumn.endsWith('.ogg');
+                            default:
+                                return false; // No muestra ninguna fila si el tipo de archivo no coincide
+                        }
+                    }
+                );
+
+                // Filtrar por tematica
+                $.fn.dataTable.ext.search.push(
+                    function (settings, data, dataIndex) {
+                        var topic = $('#topicFilter').val();
+                        var fila = $('#myTable').DataTable().row(dataIndex).node();
+                        var tematica = $(fila).data('topic');
+                        if (topic === "" || tematica === topic) {
+                            return true;
+                        }
+                        return false;
+                    }
+                );
+
+                // Filtrar por palabras clave
+                $.fn.dataTable.ext.search.push(
+                    function (settings, data, dataIndex) {
+                        var keyWords = $('#keyWordsFilter').val();
+                        var fila = $('#myTable').DataTable().row(dataIndex).node();
+                        var palabrasClave = $(fila).data('keywords');
+
+                        if (keyWords === "") {
+                            return true;
+                        } else if (palabrasClave) {
+                            // Divide las palabras clave del anuncio y verifica si alguna coincide
+                            return palabrasClave.split(',').some(keyword => keyword.trim() === keyWords);
+                        }
+
+                        return false;
+                    }
+                );
+
+                // Filtrar por tipo de medio de comunicacion
+                if (mediaType) {
+                    table.column(5).search(mediaType);
+                } else {
+                    table.column(5).search('');
+                }
+
+                // Filtrar por medio
+                if (media) {
+                    table.column(6).search(media);
+                } else {
+                    table.column(6).search('');
+                }
+
+                // Filtrar por tipo de rol de genero del hombre
+                if (genderRoleMaleType) {
+                    table.column(8).search(genderRoleMaleType);
+                } else {
+                    table.column(8).search('');
+                }
+
+                // Filtrar por tipo de rol de genero de la mujer
+                if (genderRoleFemaleType) {
+                    table.column(9).search(genderRoleFemaleType);
+                } else {
+                    table.column(9).search('');
+                }
+
+                // Filtrar por tipo de rol de genero del menor
+                if (childRoleType) {
+                    table.column(11).search(childRoleType);
+                } else {
+                    table.column(11).search('');
+                }
+
+                // Obtenemos los datos de las filas que han pasado los filtros
+                var filteredData = table.rows({ filter: 'applied' }).data();
+
+                // Convierte esos datos en un array de anuncios.
+                var adsToShow = filteredData.toArray();
+
+                table.draw();
+                lazy.update();
+
+                // Llamamos a este metodo con los anuncios filtrados para crear el modo de tarjeta con los filtros
+                displayAds(adsToShow);
+                // Cierra el menú después de aplicar los filtros
+                closeFilterMenu();
+            };
+
+        });
+
+    </script>
+</head>
+
+<body>
+
+    <!-- CABECERA -->
+    <div th:replace="~{general :: navbar}"></div>
+
+    <div class="modal fade custom-modal" id="responseModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="exampleModalLabel"></h1>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body fs-3" id="responseMessage">
+                    <p th:if="${successMessage}" th:text="${successMessage}"></p>
+                    <p th:if="${errorMessage}" th:text="${errorMessage}"></p>
+                    <p th:if="${responseMessage}" th:text="${responseMessage}"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fs-3" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmacion para eliminar anuncios -->
+    <div class="modal fade custom-modal" id="deleteAdsModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="confirmModalLabel">Confirmar Eliminación</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body fs-3">
+                    ¿Estás seguro de que deseas eliminar todos los anuncios del usuario?
+                    <p class="mt-2" style="color: red;">ATENCIÓN: UNA VEZ BORRADOS, NO SE PODRÁN RECUPERAR</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fs-3 me-5" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger fs-3" id="deleteAdsButton"
+                        onclick="eliminarAnuncios(this.getAttribute('data-user-id'))">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mostramos un titulo de pagina diferente dependiendo de desde que controlador hayamos llegado :
+     Podemos mostrar mis anuncios, el listado total de anuncios o los anuncios de un usuario concreto -->
+    <div th:if="${user == null}">
+        <div th:if="${isMyAds}">
+            <div class="bg-white text-secondary p-5">
+                <h2>Mis anuncios</h2>
+            </div>
+        </div>
+
+        <div th:if="${!isMyAds}">
+            <div class="bg-white text-secondary p-5">
+                <h2>Listado de anuncios</h2>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${user != null}">
+        <div class="d-flex justify-content-between">
+            <div class="bg-white text-secondary p-5">
+                <h2>Anuncios de <span th:text="${user.username}">Nombre de Usuario</span></h2>
+            </div>
+
+            <div class="bg-white text-secondary p-5">
+                <button class="btn btn-danger btn-lg" th:onclick="'openDeleteModal(' + ${user.id} + ');'"
+                    th:data-user-id="${user.id}">
+                    <i class="fa-solid fa-circle-exclamation"></i> Eliminar Todos los Anuncios del Usuario <i
+                        class="fa-solid fa-circle-exclamation"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Elegir el modo lista o el modo tarjeta -->
+    <div class="d-flex justify-content-center bg-white text-secondary mb-1">
+        <h2>Seleccionar modo de vista<h2>
+    </div>
+
+    <div class="d-flex justify-content-center mt-2">
+        <div class="btn-group d-flex" role="group" aria-label="..." style="width:30rem">
+            <input type="radio" class="btn-check" name="btnradio" id="cardModeButton" autocomplete="off">
+            <label class="btn btn-lg btn-outline-primary" for="cardModeButton" title="Modo tarjetas"><i
+                    class="fa-solid fa-table-cells-large"></i></label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="listModeButton" autocomplete="off" checked>
+            <label class="btn btn-lg btn-outline-primary" for="listModeButton" title="Modo lista"><i
+                    class="fa-solid fa-list"></i></label>
+        </div>
+    </div>
+
+    <!-- TABLA DE ANUNCIOS -->
+    <div class="bg-white p-5" style="width:100%">
+        <div class="d-flex justify-content-end">
+            <button id="openFilterMenu" class="btn btn-secondary">Filtros <i class="fa-solid fa-filter"></i></button>
+        </div>
+        <div id="listMode" class="listMode">
+            <div class="d-flex justify-content-center table-responsive p5">
+                <table id="myTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col" class="text-center">Año</th>
+                            <th scope="col" class="text-center">Temática</th>
+                            <th scope="col" class="text-center">Producto</th>
+                            <th scope="col" class="text-center">Anunciante</th>
+                            <th scope="col" class="text-center">Tipo de Publicidad</th>
+                            <th scope="col" class="text-center">Medio</th>
+                            <th scope="col" class="text-center">Nombre del Medio</th>
+                            <th scope="col" class="text-center">Presupuesto</th>
+                            <th scope="col" class="text-center">Rol hombre</th>
+                            <th scope="col" class="text-center">Rol mujer</th>
+                            <th scope="col" class="text-center">Género del Menor</th>
+                            <th scope="col" class="text-center">Rol del Menor</th>
+                            <th scope="col" class="text-center">Protagonismo</th>
+                            <th scope="col" class="text-center">Anuncio</th>
+                            <th scope="col" class="text-center">Detalles</th>
+                            <th scope="col" class="text-center" style="display:none;">Url para tarjetas</th>
+                            <th scope="col" class="text-center" style="display:none;">Id</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ad : ${ads}" th:data-keywords="${ad.keyWords}" th:data-topic="${ad.topicName}">
+                            <td class="text-center" th:text="${ad.year != null ? ad.year : 'Sin informar'}"></td>
+                            <td class="text-center" th:text="${ad.topicName != null ? ad.topicName : 'Sin informar'}">
+                            </td>
+                            <td class="text-center" th:text="${ad.product != null ? ad.product : 'Sin informar'}"></td>
+                            <td class="text-center" th:text="${ad.advertiser != null ? ad.advertiser : 'Sin informar'}">
+                            </td>
+                            <td class="text-center" th:text="${ad.adType != null ? ad.adType : 'Sin informar'}"></td>
+                            <td class="text-center" th:text="${ad.media != null ? ad.media : 'Sin informar'}"></td>
+                            <td class="text-center" th:text="${ad.mediaName != null ? ad.mediaName : 'Sin informar'}">
+                            </td>
+                            <td class="text-center" th:text="${ad.budget != null ? ad.budget : 'Sin informar'}"></td>
+                            <td class="text-center"
+                                th:text="${ad.genderRoleMale != null ? ad.genderRoleMale : 'Sin informar'}"></td>
+                            <td class="text-center"
+                                th:text="${ad.genderRoleFemale != null ? ad.genderRoleFemale : 'Sin informar'}"></td>
+                            <td class="text-center"
+                                th:text="${ad.childGender != null ? ad.childGender : 'Sin informar'}"></td>
+                            <td class="text-center" th:text="${ad.childRole != null ? ad.childRole : 'Sin informar'}">
+                            </td>
+                            <td class="text-center"
+                                th:text="${ad.protagonism != null ? ad.protagonism : 'Sin informar'}"></td>
+                            <td th:attr="data-url=${ad.mediaUrl}">
+                                <div class="d-flex align-items-center"
+                                    th:if="${ad.mediaUrl != null and (#strings.endsWith(ad.mediaUrl, '.jpg') or #strings.endsWith(ad.mediaUrl, '.png') or #strings.endsWith(ad.mediaUrl, '.jpeg'))}">
+                                    <div class="div-img">
+                                        <img class="img-zoom lazyload" loading="lazy" th:src=${ad.mediaUrl}
+                                            alt="Descripción de la imagen">
+                                    </div>
+                                </div>
+                                <div class="media-item"
+                                    th:if="${ad.mediaUrl != null and (#strings.endsWith(ad.mediaUrl, '.mp4') || #strings.endsWith(ad.mediaUrl, '.webm'))}">
+                                    <video class="media-item lazyload" controls>
+                                        <source loading="lazy" th:src=${ad.mediaUrl} type="video/mp4"
+                                            th:if="${#strings.endsWith(ad.mediaUrl, '.mp4')}" />
+                                        <source loading="lazy" th:src=${ad.mediaUrl} type="video/webm"
+                                            th:if="${#strings.endsWith(ad.mediaUrl, '.webm')}" />
+                                        Tu navegador no soporta la etiqueta de video.
+                                    </video>
+                                </div>
+                                <div style="vertical-align: middle;"
+                                    th:if="${ad.mediaUrl != null and (#strings.endsWith(ad.mediaUrl, '.mp3') || #strings.endsWith(ad.mediaUrl, '.ogg'))}">
+                                    <audio class="audio-item" controls>
+                                        <source loading="lazy" th:src=${ad.mediaUrl} type="audio/mpeg"
+                                            th:if="${#strings.endsWith(ad.mediaUrl, '.mp3')}" />
+                                        <source loading="lazy" th:src=${ad.mediaUrl} type="audio/ogg"
+                                            th:if="${#strings.endsWith(ad.mediaUrl, '.ogg')}" />
+                                        Tu navegador no soporta la etiqueta de audio.
+                                    </audio>
+                                </div>
+                            </td>
+                            <td class="text-center"><a th:href="@{/detalleAnuncio(adId=${ad.id})}"><i
+                                        class="fa-solid fa-magnifying-glass fa-2x"></i></a></td>
+                            <td style="display:none;" th:text="${ad.mediaUrl}"></td>
+                            <td style="display:none;" th:text="${ad.id}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="cardMode" id="cardMode">
+            <div class="d-flex justify-content-center p5">
+                <div class="container mt-4">
+                    <div class="row" id="ads-container">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTROS -->
+
+    <!-- Menu lateral para filtros -->
+    <div id="filterMenu" class="sidebar text-secondary">
+        <div class="p-5">
+            <div class="d-flex justify-content-between">
+                <a href="javascript:void(0)" class="closebtn" onclick="closeFilterMenu()"
+                    style="color:rgb(0, 0, 0)">&times;</a>
+                <h2 style="color:rgb(0, 0, 0)">Filtros</h2>
+            </div>
+
+
+            <div class="row">
+                <div class="col-md-4 mt-4 p-2">
+                    <label for="yearFilter" class="bold-label">Rango de años:</label>
+                </div>
+                <div class="col-md-4">
+                    <label for="startYear" style="color: rgb(0, 0, 0);">Inicio:</label>
+                    <select id="startYear" class="form-control  text-center" style="width: 60%;"></select>
+                </div>
+                <div class="col-md-4">
+                    <label for="endYear" style="color: rgb(0, 0, 0);">Final:</label>
+                    <select id="endYear" class="form-control  text-center" style="width: 60%;"></select>
+                </div>
+            </div>
+            <div id="yearError" style="color: red; display: none;">La fecha de inicio no puede ser mayor que la
+                final.</div>
+            <div class="mt-2 p-2">
+                <label for="mediaTypeFilter" class="bold-label">Tipo de medio:</label>
+                <select id="mediaTypeFilter" class="form-control mt-1">
+                    <option value="" selected>Seleccione una opción...</option>
+                    <option th:each="mediaType : ${mediaTypeList}" th:text="${mediaType.mediaType}"
+                        th:value="${mediaType.mediaType}">
+                    </option>
+                </select>
+            </div>
+            <div class="mt-2 p-2">
+                <label for="mediaFilter" class="bold-label">Nombre del medio:</label>
+                <select id="mediaFilter" class="form-control mt-1">
+                    <option value="" selected>Seleccione una opción...</option>
+                    <option th:each="media : ${mediaList}" th:text="${media.mediaName}" th:value="${media.mediaName}">
+                    </option>
+                </select>
+            </div>
+            <div class="mt-2 p-2">
+                <label for="genderRoleMaleTypeFilter" class="bold-label">Rol Hombre:</label>
+                <select id="genderRoleMaleTypeFilter" class="form-control mt-1">
+                    <option value="">Seleccione una opción...</option>
+                    <option th:each="genderRoleMaleType : ${genderRoleMaleTypeList}"
+                        th:text="${genderRoleMaleType.genderMaleRole}" th:value="${genderRoleMaleType.genderMaleRole}">
+                    </option>
+                </select>
+            </div>
+            <div class="mt-2 p-2">
+                <label for="genderRoleFemaleTypeFilter" class="bold-label">Rol Mujer:</label>
+                <select id="genderRoleFemaleTypeFilter" class="form-control mt-1">
+                    <option value="">Seleccione una opción...</option>
+                    <option th:each="genderRoleFemaleType : ${genderRoleFemaleTypeList}"
+                        th:text="${genderRoleFemaleType.genderFemaleRole}"
+                        th:value="${genderRoleFemaleType.genderFemaleRole}"></option>
+                </select>
+            </div>
+            <div class="mt-2 p-2">
+                <label for="childRoleTypeFilter" class="bold-label">Rol menor:</label>
+                <select id="childRoleTypeFilter" class="form-control mt-1">
+                    <option value="">Seleccione una opción...</option>
+                    <option th:each="childRoleType : ${childRoleTypeList}" th:text="${childRoleType.childRole}"
+                        th:value="${childRoleType.childRole}"></option>
+                </select>
+            </div>
+            <div class="mt-2 p-2">
+                <label for="topicFilter" class="bold-label">Tematica:</label>
+                <select id="topicFilter" class="form-control mt-1">
+                    <option value="">Seleccione una opción...</option>
+                    <option th:each="topic : ${topicList}" th:text="${topic.topicName}" th:value="${topic.topicName}">
+                    </option>
+                </select>
+            </div>
+            <div class="mt-2 p-2">
+                <label for="keyWordsFilter" class="bold-label">Palabras clave:</label>
+                <select id="keyWordsFilter" class="form-control mt-1">
+                    <option value="">Seleccione una opción...</option>
+                    <option th:each="keyWords : ${keyWordsList}" th:text="${keyWords.word}" th:value="${keyWords.word}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="mt-2 p-2">
+                <label for="multimediaFilter" class="bold-label">Tipo multimedia:</label>
+                <select id="multimediaFilter" class="form-control mt-1">
+                    <option value="">Seleccione una opción...</option>
+                    <option value="image">Imagen</option>
+                    <option value="video">Video</option>
+                    <option value="audio">Audio</option>
+                </select>
+            </div>
+            <div class="d-flex justify-content-end mt-3">
+                <button id="applyFilters" class="btn btn-success btn-lg" onclick="applyFilters()">Aplicar
+                    filtros</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div th:replace="~{general :: footer}"></div>
+
+
+    <!-- SCRIPT PARA CERRAR DESPLEGABLE DE CABECERA AL HACER CLIC FUERA DE EL -->
+    <script>
+        window.onclick = function (event) {
+            if (!event.target.matches('.dropbtn')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.style.display === "block") {
+                        openDropdown.style.display = "none";
+                    }
+                }
+            }
+        }</script>
+
+
+    <!-- SCRIPT PARA EL MENU DE FILTROS -->
+    <script>
+        // Funcion para abrir el menu de filtros
+        function openFilterMenu() {
+            document.getElementById("filterMenu").style.width = "350px";
+        }
+
+        // Funcion para cerrarlo
+        function closeFilterMenu() {
+            document.getElementById("filterMenu").style.width = "0";
+        }
+
+        // Agregar los event listeners al cargar el documento
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById("openFilterMenu").addEventListener("click", openFilterMenu);
+            document.querySelector('.closebtn').addEventListener("click", closeFilterMenu);
+        });
+    </script>
+
+    <!-- SCRIPT PARA VALIDAR LOS ANIOS DE LOS FILTROS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentYear = new Date().getFullYear();
+            const startYearSelect = document.getElementById('startYear');
+            const endYearSelect = document.getElementById('endYear');
+            const applyFiltersBtn = document.getElementById('applyFilters');
+
+            //Por defecto se crea entre el anio 1900 y el actual
+            for (let year = 1900; year <= currentYear; year++) {
+                startYearSelect.add(new Option(year, year));
+                const option = new Option(year, year);
+                if (year === currentYear) {
+                    option.selected = true;
+                }
+                endYearSelect.add(option);
+            }
+
+            // Funcion para validar que los anios son correctos
+            function validateYears() {
+                const startYear = startYearSelect.value;
+                const endYear = endYearSelect.value;
+                let isValid = true;
+
+                // El anio de inicio no puede ser mayor que el real
+                if (startYear > endYear) {
+                    document.getElementById('yearError').style.display = 'block';
+                    startYearSelect.style.borderColor = 'red';
+                    endYearSelect.style.borderColor = 'red';
+                    isValid = false;
+                } else {
+                    document.getElementById('yearError').style.display = 'none';
+                    startYearSelect.style.borderColor = '';
+                    endYearSelect.style.borderColor = '';
+                }
+
+                // Activar o desactivar el boton segun la validez
+                applyFiltersBtn.disabled = !isValid;
+            }
+
+            startYearSelect.addEventListener('change', validateYears);
+            endYearSelect.addEventListener('change', validateYears);
+        });
+    </script>
+
+    <!-- SCRIPT PARA CREAR EL LISTADO DE TARJETAS -->
+    <script th:inline="javascript">
+        //Obtenemos los anuncios
+        /*<![CDATA[*/
+        let ads = /*[[${ads}]]*/[];
+        let currentIndex = 0;
+        //Se mostraran 20 anuncios al comenzar
+        const adsPerLoad = 20;
+        isFiltered = false;
+
+        function displayAds(filteredAds) {
+            const container = document.getElementById('ads-container');
+
+            //Si hemos aplicado algun filtro, mostramos los anuncios filtrados
+            if (filteredAds !== null) {
+                ads = filteredAds;
+                isFiltered = true;
+                currentIndex = 0;
+                container.innerHTML = '';
+
+            }
+
+            //Vamos mostrando anuncios de 20 en 20, segun vayamos bajando en la pagina se van cargando mas
+            for (let i = currentIndex; i < currentIndex + adsPerLoad && i < ads.length; i++) {
+                const ad = ads[i];
+                const adElement = document.createElement('div');
+                adElement.className = 'col-md-3 mb-4 p-2';
+                let contentHTML;
+                if (!isFiltered) {
+                    contentHTML = `
+            <div class="card m-3 rounded-5 text-secondary" style="overflow: hidden; border: 3px solid grey; border-radius: 16px!important;">
+                ${generateMediaContent(ad, isFiltered)}
+                <div class="card-body">
+                    <h5 class="card-title text-center">${ad.year}</h5>
+                    <p class="card-text text-center">${ad.advertiser}</p>
+                    <div style="text-align:center">
+                        <a href="/detalleAnuncio?adId=${ad.id}" class="btn btn-primary btn-lg card-button fs-4">Ver más</a>
+                    </div>
+                </div>
+            </div>`;
+                } else {
+                    contentHTML = `
+            <div class="card m-3 rounded-5 text-secondary style="overflow: hidden; border: 3px solid grey; border-radius: 16px!important;">
+                ${generateMediaContent(ad, isFiltered)}
+                <div class="card-body">
+                    <h5 class="card-title text-center">${ad[0]}</h5>
+                    <p class="card-text text-center">${ad[3]}</p>
+                    <div style="text-align:center">
+                        <a href="/detalleAnuncio?adId=${ad[16]}" class="btn btn-primary btn-lg card-button fs-4">Ver más</a>
+                    </div>
+                </div>
+            </div>`;
+                }
+                adElement.innerHTML = contentHTML;
+                container.appendChild(adElement);
+            }
+            currentIndex += adsPerLoad;
+        }
+
+        //Funcion para general el contenido multimedia
+        function generateMediaContent(ad, isFiltered) {
+            let url = ad.mediaUrl;
+            if (isFiltered) {
+                url = ad[15];
+            }
+            if (url != null && (url.endsWith('.jpg') || url.endsWith('.png') || url.endsWith('.jpeg'))) {
+                return `<div class="d-flex align-items-center"><img class="card-img-top" src="${url}" alt="Descripción de la imagen"></div>`;
+            } else if (url != null && (url.endsWith('.mp4') || url.endsWith('.webm'))) {
+                return `<video class="card-video-top" controls>
+                    <source src="${url}" type="video/${url.split('.').pop()}">
+                    Tu navegador no soporta la etiqueta de video.
+                </video>`;
+            } else if (url != null && (url.endsWith('.mp3') || url.endsWith('.ogg'))) {
+                return `<audio class="card-audio-top" controls>
+                    <source src="${url}" type="audio/${url.split('.').pop()}">
+                    Tu navegador no soporta la etiqueta de audio.
+                </audio>`;
+            }
+            return '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // Muestra los primeros anuncios
+            displayAds(null);
+            const cardModeDiv = document.getElementById('cardMode');
+
+            window.onscroll = function () {
+                if (window.innerHeight + window.pageYOffset >= document.body.offsetHeight - 100) {
+                    if (cardModeDiv.style.display === 'block') {
+                        // Carga más anuncios cuando se llega al final de la página
+                        displayAds(null);
+                    }
+                }
+            };
+
+        });
+        /*]]>*/
+    </script>
+
+    <!-- SCRIPT PARA MOSTRAR MODO LISTA O MODO TARJETA -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const cardModeButton = document.getElementById('cardModeButton');
+            const listModeButton = document.getElementById('listModeButton');
+            const cardModeDiv = document.getElementById('cardMode');
+            const listModeDiv = document.getElementById('listMode');
+
+            // Configuracion inicial
+            listModeDiv.style.display = 'block';  // Mostrar modo lista por defecto
+            cardModeDiv.style.display = 'none';   // Ocultar modo tarjetas
+
+            // Evento de mostrar tarjetas
+            cardModeButton.addEventListener('click', function () {
+                cardModeDiv.style.display = 'block';  // Muestra el div de tarjetas
+                listModeDiv.style.display = 'none';  // Oculta el div de lista
+            });
+
+            // Evento de mostrar lista
+            listModeButton.addEventListener('click', function () {
+                listModeDiv.style.display = 'block'; // Muestra el div de lista
+                cardModeDiv.style.display = 'none';  // Oculta el div de tarjetas
+            });
+        });
+    </script>
+
+    <!-- SCRIPT PARA MOSTRAR UN MODAL CUANDO SE ELIMINA UN ANUNCIO DE LA WEB -->
+    <script>
+        function openDeleteModal(userId) {
+            document.getElementById('deleteAdsButton').setAttribute('data-user-id', userId);
+            // Abrir el modal
+            var myModal = new bootstrap.Modal(document.getElementById('deleteAdsModal'));
+            myModal.show();
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const messageCode = urlParams.get('message');
+            if (messageCode === 'AdDeleted') {
+                const modalMessage = "Se ha eliminado el anuncio correctamente.";
+                document.getElementById('responseMessage').textContent = modalMessage;
+                $('#responseModal').modal('show');
+            }
+        });
+    </script>
+
+    <!-- SCRIPT PARA HACER LA PETICION JSON PARA ELIMINAR TODOS LOS ANUNCIOS DE UN USUARIO -->
+    <script>
+        function eliminarAnuncios(userId) {
+            fetch(`/eliminarAnuncios/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Mostramos un modal con el mensaje que nos devuelve el servidor
+                    $('#deleteAdsModal').modal('hide');
+                    document.getElementById('responseMessage').textContent = data.message;
+                    localStorage.setItem('fromDeleteUsers', 'true');
+                    $('#responseModal').modal('show');
+                    $('#responseModal').on('hidden.bs.modal', function () {
+                        location.reload(); // Recarga la pagina cuando el modal se cierra
+                    });
+                })
+                .catch(error => {
+                    $('#deleteAdsModal').modal('hide');
+                    console.error('Error:', error);
+                    document.getElementById('responseMessage').textContent = error.message;
+                    $('#responseModal').modal('show');
+                });
+        }
+    </script>
+
+</body>
+
+</html>

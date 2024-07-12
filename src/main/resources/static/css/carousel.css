@@ -1,0 +1,32 @@
+.carousel-control-prev {
+    margin-left: -150px;
+    filter: invert(100%);
+  }
+  
+  .carousel-control-next {
+    margin-right: -150px;
+    filter: invert(100%);
+  }
+
+
+  #carouselExampleIndicators2 {
+    margin-left: 50px;
+    margin-right: 50px;
+  }
+
+
+  .carousel-section {
+    border: 1px solid #ddd;
+    margin-bottom: 30px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #fff;
+}
+
+.hr-custom {
+    height: 5px;              /* Aumenta el grosor de la línea */
+    background-color: #000;   /* Cambia el color de la línea */
+    border: none;             /* Elimina cualquier borde predeterminado */
+    margin-top: 40px;         /* Espacio antes de la línea */
+    margin-bottom: 20px;      /* Espacio después de la línea */
+}

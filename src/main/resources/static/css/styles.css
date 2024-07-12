@@ -1,0 +1,352 @@
+@media only screen and (min-resolution: 192dpi) {
+
+    body {
+        overflow-x: hidden;
+    }
+}
+
+html {
+    font-size: 10px;
+}
+
+#content {
+    min-height: 300px;
+}
+
+button {
+    padding: 1px 1px;
+    font-size: 10px;
+}
+
+/* Establece la altura y anchura de imagenes, videos y audios en la tabla */
+.media-item {
+    height: auto;
+    width: 150px;
+    max-width: 100%;
+}
+
+.div-img {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    padding-top: 5%;
+    padding-bottom: 5%;
+}
+
+.img-zoom {
+    transition: transform .2s;
+    width: 150px;
+    height: auto;
+    background-color: rgb(173, 173, 237);
+    border-radius: 10px;
+    border: 1px solid black;
+}
+
+.img-zoom:hover {
+    transform: scale(1.5);
+    /* Escala la imagen al 120% cuando el ratón está sobre ella */
+}
+
+.audio-item {
+    width: 150px;
+    display: flex;
+}
+
+.outer-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/*MENU LATERAL*/
+
+/* Desplegable laterañ */
+.sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    background-color: #ffffff;
+    color: white;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 20px;
+}
+
+/* Boton de cerrar */
+.sidebar .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    color: white;
+    cursor: pointer;
+}
+
+/* Estilos para los enlaces dentro del menú */
+.sidebar a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar a:hover {
+    color: #f1f1f1;
+}
+
+.sidebar.open {
+    width: 350px;
+}
+
+table td {
+    vertical-align: middle;
+    text-align: center;
+    width: 5%;
+}
+
+table tr {
+    vertical-align: middle;
+    text-align: center;
+    width: 5%;
+}
+
+/* Ancho y alto de los archivos en las tarjetas */
+.card-img-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-video-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-audio-top {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Boton de las tarjetas */
+.card-button {
+    width: 100%;
+    display: block;
+    text-align: center;
+    padding: 0.5rem 1rem;
+    border-radius: 6px !important;
+}
+
+.container {
+    padding-top: 20px;
+}
+
+
+#mytable {
+    table-layout: fixed !important;
+    word-wrap: break-word;
+}
+
+.custom-modal .modal-dialog {
+    max-width: 60%;
+    min-height: 70%;
+    margin: 1.75rem auto;
+}
+
+.custom-modal .modal-content {
+    height: 100%;
+}
+
+.custom-modal .modal-body {
+    padding: 20px;
+}
+
+.custom-modal .modal-header,
+.custom-modal .modal-footer {
+    padding: 20px;
+}
+
+
+/* Links sin subrayado */
+.link-custom {
+    color: blue;
+    text-decoration: none;
+}
+
+.link-custom:hover {
+    text-decoration: underline;
+}
+
+/* Texto en una sola linea */
+.single-line {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Colores estados de notificaciones */
+.status-approved {
+    color: green;
+}
+
+.status-rejected {
+    color: red;
+}
+
+.status-pending {
+    color: black;
+}
+
+
+.table th.message-column,
+.table td.message-column {
+    min-width: 800px;
+    text-align: center;
+}
+
+.form-control {
+    width: 30%;
+}
+
+
+
+.bold-label {
+    font-weight: bold;
+}
+
+.custom-input {
+    border: 2px solid #bababa;
+    font-size: 15px;
+    flex-grow: 1;
+}
+
+/* Hace que parpadee el borde del input al seleccionar para agregar una nueva categoria */
+@keyframes blink-border {
+
+    0%,
+    100% {
+        border-color: #0c0cec;
+    }
+
+    50% {
+        border-color: #979393;
+    }
+}
+
+.blink {
+    animation: blink-border 1.5s infinite;
+}
+
+.custom-input-new {
+    border: 2px solid #bababa;
+    font-size: 15px;
+    flex-grow: 1;
+}
+
+
+.label-input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.form-label {
+    width: 30%;
+    text-align: right;
+    margin-right: 10px;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.form-label-new {
+    width: 100%;
+    font-weight: bold;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.form-label-all {
+    width: 15%;
+    text-align: right;
+    margin-right: 10px;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+
+.form-select {
+    flex-grow: 1;
+}
+
+.container-new {
+    display: flex;
+    justify-content: space-between;
+}
+
+.image-preview-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 60px;
+}
+
+.media-form-container {
+    display: flex;
+    align-items: start;
+}
+
+.carousel-item .col {
+    flex: 0 0 25%;
+    max-width: 25%;
+}
+
+
+li {
+    list-style-type: none;
+}
+
+/* Aplicar estilos solo a los elementos nav-link que NO son dropdowns */
+.navbar-nav>li>.nav-link:not(.dropdown-toggle) {
+    transition: background-color 0.3s, color 0.3s;
+    padding: 10px 10px;
+    border-radius: 5px;
+}
+
+.navbar-nav>li>.nav-link:not(.dropdown-toggle):hover {
+    background-color: #1b6ecd;
+    color: #ffffff;
+}
+
+.btn-primary {
+    background-color: #4685cd !important;
+}
+
+.btn-primary:hover,
+.btn-primary:active {
+    background-color: #1b6ecd !important;
+}
+
+.btn-danger {
+    background-color: #cd335f !important;
+}
+
+input[type="radio"]:checked+.btn {
+    color: #fff;
+    background: #4685cd !important;
+}
+
+.nav-link.dropdown-toggle::after {
+    content: none !important;
+}
+
+.error-message {
+    color: red;
+    font-size: 0.875em;
+    display: none;
+}

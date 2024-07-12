@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de anuncio</title>
+    <link rel="stylesheet" type="text/css" href="/resources/css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="/resources/css/footer.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/2.0.5/css/dataTables.bootstrap5.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+
+
+</head>
+
+<body>
+
+
+
+
+    <div th:replace="~{general :: modal-info}"></div>
+
+    <!-- Modal de confirmacion de eliminar -->
+    <div class="modal fade custom-modal" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content ">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="confirmModalLabel">Confirmar eliminación</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body fs-3">
+                    ¿Estás seguro de que deseas eliminar este anuncio?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fs-3 me-5" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger fs-3" id="deleteBtn" onclick="deleteAd()">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmacion de solicitar edicion -->
+    <div class="modal fade custom-modal" id="petitionModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="confirmModalLabel">Confirmar Solicitud</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body fs-3">
+                    Se enviará una solicitud a sus profesores para poder editar este anuncio. ¿Está seguro?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fs-3 me-5" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success fs-3" id="petitionBtn"
+                        onclick="requestEditPermission()">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CABECERA -->
+    <div th:replace="~{general :: navbar}"></div>
+
+    <!-- Cuadro de detalle de anuncio, muestra sus datos completos y su archivo multimedia asociado -->
+    <div class="d-flex justify-content-center" style="width:100%; width:100%;">
+        <div class="mt-4 mb-4 p-5 text-secondary border border-dark" style="width:90%; background-color: #e3e5ea">
+            <div class="row">
+                <!-- Enlace a la pagina de todos los anuncios del usuario que ha creado este anuncio -->
+                <div th:if="${ad.username != null}" class="fs-2 fw-bold text-dark mb-5">Usuario: <a
+                        th:href="@{/anunciosUsuario?userId={userId}(userId=${ad.userId})}" th:text="${ad.username}"
+                        class="link-custom fs-2" style="font-weight: normal;"></a>
+                </div>
+                <div class="col-md-5 image-preview-container" style="vertical-align: middle;">
+                    <div class="outer-div">
+                        <div class="middle-div">
+                            <div class="video-container">
+                                <div
+                                    th:if="${ad.mediaUrl != null and (#strings.endsWith(ad.mediaUrl, '.jpg') or #strings.endsWith(ad.mediaUrl, '.png') or #strings.endsWith(ad.mediaUrl, '.jpeg'))}">
+                                    <img th:src=${ad.mediaUrl} alt="Descripción de la imagen"
+                                        style="max-height: 100%; width: 100%; max-width: 100%; height: auto;">
+                                </div>
+                            </div>
+                            <div class="video-container"
+                                th:if="${ad.mediaUrl != null and (#strings.endsWith(ad.mediaUrl, '.mp4') || #strings.endsWith(ad.mediaUrl, '.webm'))}">
+                                <video width="100%" height="auto" controls>
+                                    <source th:src=${ad.mediaUrl} type="video/mp4"
+                                        th:if="${#strings.endsWith(ad.mediaUrl, '.mp4')}">
+                                    <source th:src=${ad.mediaUrl} type="video/webm"
+                                        th:if="${#strings.endsWith(ad.mediaUrl, '.webm')}">
+                                    Tu navegador no soporta la etiqueta de video.
+                                </video>
+                            </div>
+                            <div class="video-container"
+                                th:if="${ad.mediaUrl != null and (#strings.endsWith(ad.mediaUrl, '.mp3') || #strings.endsWith(ad.mediaUrl, '.ogg'))}">
+                                <audio width="auto" height="auto" controls style="width: 500px;">
+                                    <source th:src=${ad.mediaUrl} type="audio/mpeg"
+                                        th:if="${#strings.endsWith(ad.mediaUrl, '.mp3')}">
+                                    <source th:src=${ad.mediaUrl} type="audio/ogg"
+                                        th:if="${#strings.endsWith(ad.mediaUrl, '.ogg')}">
+                                    Tu navegador no soporta la etiqueta de audio.
+                                </audio>
+                            </div>
+
+
+                            <!--Si el usuario no esta registrado solo podra descargar el anuncio-->
+                            <div sec:authorize="!isAuthenticated()" class="row mt-4">
+                                <div class="col-md-12">
+                                    <button class="btn btn-secondary btn-lg" onclick="downloadAd()"
+                                        style="width: 100%;">Descargar
+                                        Anuncio</button>
+                                </div>
+                            </div>
+
+                            <!--Si es un profesor puede ademas eliminar y editar el anuncio-->
+                            <div sec:authorize="hasRole('PROFESOR')" class="row mt-4">
+                                <div class="col-md-4">
+                                    <div sec:authorize="hasRole('PROFESOR')">
+                                        <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal"
+                                            data-bs-target="#confirmModal" style="width: 100%;">
+                                            Eliminar Anuncio
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+
+                                    <button class="btn btn-secondary btn-lg" onclick="downloadAd()"
+                                        style="width: 100%;">Descargar
+                                        Anuncio</button>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <!-- Solo lo podra editar el profesor o un alumno al que el profesor le haya autorizado -->
+                                    <div sec:authorize="hasRole('PROFESOR')">
+                                        <button class="btn btn-success btn-lg" onclick="editAd()"
+                                            style="width: 100%;">Editar
+                                            Anuncio</button>
+                                    </div>
+
+                                    <div sec:authorize="hasRole('ALUMNO')"
+                                        th:if="${ad.isEditable and actualUserIsAuthor}">
+                                        <button class="btn btn-success btn-lg" onclick="editAd()">Editar
+                                            Anuncio</button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!--Si es un alumno puede solicitar permiso al profesor para editarlo o hacer la edicion si ya se ha concedido el permiso-->
+                            <div sec:authorize="hasRole('ALUMNO')" th:if="${actualUserIsAuthor}" class="row mt-4">
+                                <div class="col-md-6">
+                                    <button class="btn btn-secondary btn-lg" onclick="downloadAd()"
+                                        style="width: 100%;">Descargar
+                                        Anuncio</button>
+                                </div>
+                                <div class="col-md-6">
+
+                                    <div sec:authorize="hasRole('ALUMNO')">
+                                        <div th:if="${!ad.isEditable and actualUserIsAuthor}">
+                                            <div th:if="${!isPendingAprovalEditing}">
+                                                <button class="btn btn-success btn-lg" data-bs-target="#petitionModal"
+                                                    data-bs-toggle="modal" style="width: 100%;">Solicitar
+                                                    edición</button>
+                                            </div>
+                                            <div th:if="${isPendingAprovalEditing}" class="mt-1 text-center text-dark"
+                                                style="width: 100%;">
+                                                <!-- Mensaje que se muestra si ya se ha solicitado la edicion y esta pendiente de aprobacian -->
+                                                <h5>La edición está pendiente de ser aprobada por el profesor.</h5>
+                                            </div>
+                                        </div>
+                                        <div sec:authorize="hasRole('ALUMNO')"
+                                            th:if="${ad.isEditable and actualUserIsAuthor}">
+                                            <button class="btn btn-success btn-lg" onclick="editAd()"
+                                                style="width: 100%;">Editar
+                                                Anuncio</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!--Si es un alumno no puede editar los anuncios de otros alumnos-->
+                            <div sec:authorize="hasRole('ALUMNO')" th:if="${!actualUserIsAuthor}" class="row mt-4">
+
+                                <div class="col-md-12">
+
+                                    <button class="btn btn-secondary btn-lg" onclick="downloadAd()"
+                                        style="width: 100%;">Descargar
+                                        Anuncio</button>
+                                </div>
+
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class='outer-div'>
+                        <div class='middle-div'>
+                            <div class="row">
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Temática</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.topicName != null ? ad.topicName : 'Sin informar'}"></span>
+                                </div>
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Anunciante</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.advertiser != null ? ad.advertiser : 'Sin informar'}"></span>
+                                </div>
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Producto</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.product != null ? ad.product : 'Sin informar'}"></span>
+                                </div>
+
+                            </div>
+
+                            <div class="mt-4 align-self-center" style="width:70%; margin: auto">
+                                <hr class="hr" />
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-3 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold text-justify"><span>Año</span></div>
+                                    <span class="fs-4" th:text="${ad.year != null ? ad.year : 'Sin informar'}"></span>
+                                </div>
+                                <div class="col-md-3 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Nombre del medio</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.mediaName != null ? ad.mediaName : 'Sin informar'}"></span>
+                                </div>
+                                <div class="col-md-3 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Tipo de publicidad</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.adType != null ? ad.adType : 'Sin informar'}"></span>
+                                </div>
+                                <div class="col-md-3 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Medios</span> </div>
+                                    <span class="fs-4" th:text="${ad.media != null ? ad.media : 'Sin informar'}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 align-self-center" style="width:70%; margin: auto">
+                                <hr class="hr" />
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Presupuesto</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.budget != null ? ad.budget : 'Sin informar'}"></span>
+                                </div>
+                                <div class="col-md-6 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Relación de Género</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.genderRelation != null ? ad.genderRelation : 'Sin informar'}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 align-self-center" style="width:70%; margin: auto">
+                                <hr class="hr" />
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Rol de género hombre</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.genderRoleMale != null ? ad.genderRoleMale : 'Sin informar'}"></span>
+                                </div>
+                                <div class="col-md-6 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Rol de género mujer</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.genderRoleFemale != null ? ad.genderRoleFemale : 'Sin informar'}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 align-self-center" style="width:70%; margin: auto">
+                                <hr class="hr" />
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold">
+                                        <span
+                                            th:text="${numberOfChilds >= 2} ? 'Género del menor 1' : 'Género del menor'"></span>
+                                    </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.childGender != null ? ad.childGender : 'Sin informar'}"></span>
+                                </div>
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold">
+                                        <span
+                                            th:text="${numberOfChilds >= 2} ? 'Rol del menor 1' : 'Rol del menor'"></span>
+                                    </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.childRole != null ? ad.childRole : 'Sin informar'}"></span>
+                                </div>
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold">
+                                        <span
+                                            th:text="${numberOfChilds >= 2} ? 'Protagonismo 1' : 'Protagonismo'"></span>
+                                    </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.protagonism != null ? ad.protagonism : 'Sin informar'}"></span>
+                                </div>
+                            </div>
+
+                            <div class="row" th:if="${numberOfChilds >= 2}">
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Género del menor 2</span> </div>
+                                    <span class="fs-4" th:text="${ad.childGender2}"></span>
+                                </div>
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Rol del menor 2</span> </div>
+                                    <span class="fs-4" th:text="${ad.childRole2}"></span>
+                                </div>
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Protagonismo 2</span> </div>
+                                    <span class="fs-4" th:text="${ad.protagonism2}"></span>
+                                </div>
+                            </div>
+
+                            <div class="row" th:if="${numberOfChilds >= 3}">
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Género del menor 3</span> </div>
+                                    <span class="fs-4" th:text="${ad.childGender3}"></span>
+                                </div>
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Rol del menor 3</span> </div>
+                                    <span class="fs-4" th:text="${ad.childRole3}"></span>
+                                </div>
+                                <div class="col-md-4 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Protagonismo 3</span> </div>
+                                    <span class="fs-4" th:text="${ad.protagonism3}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 align-self-center" style="width:70%; margin: auto">
+                                <hr class="hr" />
+                            </div>
+
+
+                            <div class="row">
+                                <div class="col-md-6 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Palabras clave</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.keyWords != null && !ad.keyWords.isEmpty() ? ad.keyWords : 'Sin informar'}"></span>
+                                </div>
+
+                                <div class="col-md-6 text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Target</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.target != null ? ad.target : 'Sin informar'}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 align-self-center" style="width:70%; margin: auto">
+                                <hr class="hr" />
+                            </div>
+
+
+                            <div class="row">
+                                <div class="text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Objetivo</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.objective != null ? ad.objective : 'Sin informar'}"></span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 align-self-center" style="width:70%; margin: auto">
+                                <hr class="hr" />
+                            </div>
+
+                            <div class="row">
+                                <div class="text-center text-dark mt-4">
+                                    <div class="fs-2 fw-bold"> <span>Sinopsis</span> </div>
+                                    <span class="fs-4"
+                                        th:text="${ad.synopsis != null ? ad.synopsis : 'Sin informar'}"></span>
+                                </div>
+                            </div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div th:replace="~{general :: footer}"></div>
+
+    <!-- Script para descargar un zip con un excel de los datos del anuncio + el archivo multimedia -->
+    <script>
+        function downloadAd() {
+            var adId = document.getElementById("adId").value;
+            window.location.href = '/descargarAnuncio?adId=' + adId;
+        }
+    </script>
+
+    <input type="hidden" id="adId" th:value="${ad.id}" />
+
+    <!-- Script que redirecciona a la pagina de editar anuncio -->
+    <script>
+        function editAd() {
+            // Obtener el ID del anuncio
+            var adId = document.getElementById("adId").value;
+            window.location.href = "detalleAnuncio/editar?adId=" + adId;
+        }
+    </script>
+
+    <!-- Script que realiza la peticion JSON para eliminar el anuncio -->
+    <script>
+        function deleteAd() {
+            var adId = document.getElementById("adId").value;
+            fetch(`/eliminarAnuncio/${adId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    window.location.href = 'anuncios?message=AdDeleted';
+                })
+                .catch(error => {
+                     // Mostramos un modal con el mensaje que nos devuelve el servidor
+                     const modalElement = document.getElementById('messageModal');
+                    const modalTitle = modalElement.querySelector('.modal-title');
+                    const modalBody = modalElement.querySelector('.modal-body');
+    
+                    modalBody.textContent = data.message;
+                    modalTitle.textContent = 'Error al eliminar el anuncio';
+
+                    const messageModal = new bootstrap.Modal(modalElement);
+                    messageModal.show();
+                });
+        }
+    </script>
+
+    <!-- Script que realiza la peticion JSON para solicitar editar el anuncio -->
+    <script>
+        function requestEditPermission() {
+            var adId = document.getElementById("adId").value;
+            $('#petitionModal').modal('hide');
+            fetch(`/notificaciones/crearNotificacion/${adId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Mostramos un modal con el mensaje que nos devuelve el servidor
+                    const modalElement = document.getElementById('messageModal');
+                    const modalTitle = modalElement.querySelector('.modal-title');
+                    const modalBody = modalElement.querySelector('.modal-body');
+    
+                    modalBody.textContent = data.message;
+                    modalTitle.textContent = 'Solicitud de edición enviada';
+
+    
+                    const messageModal = new bootstrap.Modal(modalElement);
+                    messageModal.show();
+
+                    $('#messageModal').on('hidden.bs.modal', function () {
+                        window.location.reload(); // Recarga la pagina
+                    });
+                })
+                .catch(error => {
+                     // Mostramos un modal con el mensaje que nos devuelve el servidor
+                     const modalElement = document.getElementById('messageModal');
+                    const modalTitle = modalElement.querySelector('.modal-title');
+                    const modalBody = modalElement.querySelector('.modal-body');
+    
+                    modalBody.textContent = data.message;
+                    modalTitle.textContent = 'Error al enviar la solicitud';
+
+    
+                    const messageModal = new bootstrap.Modal(modalElement);
+                    messageModal.show();
+                });
+        }
+    </script>
+
+</body>
+
+</html>

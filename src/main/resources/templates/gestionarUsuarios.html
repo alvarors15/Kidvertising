@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<title>Gestionar usuarios</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+<link href="https://cdn.datatables.net/2.0.5/css/dataTables.bootstrap5.css" rel="stylesheet">
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" type="text/css" href="/resources/css/styles.css" />
+<link rel="stylesheet" type="text/css" href="/resources/css/footer.css" />
+
+<head>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.5/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.0.5/js/dataTables.bootstrap5.js"></script>
+
+    <style>
+        .table td,
+        .table th {
+            font-size: 15px;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            var table = new DataTable('#myTable', {
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/2.0.5/i18n/es-ES.json',
+                },
+                "bAutoWidth": false,
+                columnDefs: [
+                    { width: "10%", targets: [0] },
+                    { width: "30%", targets: [1] },
+                    { width: "30%", targets: [2] },
+                    { width: "15%", targets: [3] },
+                    { width: "15%", targets: [4] }
+
+                ]
+            });
+            // Evento de cambio para los checkboxes de roles
+            $('input[name="roleFilter"]').on('change', function () {
+                $('input[name="roleFilter"]').not(this).prop('checked', false);
+                applyFilters();
+            });
+
+            function applyFilters() {
+                $.fn.dataTable.ext.search.push(
+                    function (settings, data, dataIndex) {
+                        var roleFilter = $('input[name="roleFilter"]:checked').val();
+                        var roleText = data[3];
+
+                        if (!roleFilter) {
+                            return true;
+                        }
+
+                        // Compara el texto del rol en la fila con el valor del filtro
+                        return (roleFilter === 'ROLE_PROFESOR' && roleText === 'Profesor') ||
+                            (roleFilter === 'ROLE_ALUMNO' && roleText === 'Alumno');
+                    }
+                );
+
+                table.draw();
+            }
+
+
+            function closeFilterMenu() {
+                $('input[name="roleFilter"]').prop('checked', false);
+                $.fn.dataTable.ext.search.pop();
+                table.draw();
+            }
+
+            window.closeFilterMenu = closeFilterMenu;
+        });
+
+
+    </script>
+
+
+</head>
+
+<body>
+
+    <!-- CABECERA -->
+    <div th:replace="~{general :: navbar}"></div>
+
+
+    <!-- Modal para mensajes de respuesta -->
+    <div class="modal fade custom-modal" id="responseModal" tabindex="-1" role="dialog"
+        aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="exampleModalLabel"></h1>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body fs-3" id="responseMessage">
+                    <p th:if="${successMessage}" th:text="${successMessage}"></p>
+                    <p th:if="${errorMessage}" th:text="${errorMessage}"></p>
+                    <p th:if="${responseMessage}" th:text="${responseMessage}"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fs-3" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmacion de eliminacion de usuarios -->
+    <div class="modal fade custom-modal" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="confirmModalLabel">Confirmar Eliminación</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body fs-3">
+                    ¿Estás seguro de que deseas eliminar estos usuarios?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fs-3 me-5" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger fs-3" id="deleteBtn"
+                        onclick="submitDeleteForm()">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmacion de cambio de rol -->
+    <div class="modal fade custom-modal" id="confirmRoleModal" tabindex="-1" aria-labelledby="confirmModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title" id="confirmModalLabel">Confirmar Cambio</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body fs-3">
+                    ¿Estás seguro de que deseas actualizar el rol de este usuario?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fs-3 me-5" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success fs-3" id="changeRoleButton"
+                        onclick="changeUserRole(this.getAttribute('data-user-id'))">Cambiar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" id="from-delete-users" th:value="${fromDeleteUsers}" />
+
+    <div class="p-5">
+
+        <!-- Seleccionar la vista -->
+        <div class="btn-group d-flex" role="group" aria-label="..." style="width:30rem">
+            <input type="radio" class="btn-check" name="btnradio" id="addUserButton" autocomplete="off" checked>
+            <label class="btn btn-lg btn-outline-primary" for="addUserButton">Añadir Usuario</label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="listUsersButton" autocomplete="off">
+            <label class="btn btn-lg btn-outline-primary" for="listUsersButton">Listado Usuarios</label>
+        </div>
+
+        <!-- Formulario de agregar usuario -->
+        <div class="addUser" id="addUser">
+            <form class="bg-white text-secondary mt-4" style="width:35%;" id="newUserForm" action="/agregarUsuario"
+                method="post" enctype="multipart/form-data" th:action="@{/agregarUsuario}" th:object="${userDTO}">
+                <h2>Añadir nuevo usuario</h2>
+                <label for="email" class="mt-4 fs-4">Correo electrónico:</label>
+                <div class="input-group mt-1" style="height: 4rem;">
+                    <input type="email" class="form-control fs-4" id="email" name="email" required
+                        placeholder="nombre@ejemplo.com" pattern="[^@ \t\r\n]+@[^@ \t\r\n]+\.[^@ \t\r\n]+"
+                        oninvalid="this.setCustomValidity('Introduce un correo electrónico válido')"
+                        oninput="this.setCustomValidity('')" />
+                </div>
+                <label for="email" class="mt-4 fs-4">Nombre completo:</label>
+                <div class="input-group mt-1" style="height: 4rem;">
+                    <input type="text" class="form-control fs-4" id="username" name="username" required />
+                </div>
+
+                <div class="d-flex justify-content-around mt-4 fs-4">
+                    <label for="rol">Elegir rol:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="rol" id="flexRadioDefault1"
+                            value="ROLE_PROFESOR">
+                        <label class="form-check-label" for="flexRadioDefault1">
+                            Profesor
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="rol" id="flexRadioDefault2"
+                            value="ROLE_ALUMNO" checked>
+                        <label class="form-check-label" for="flexRadioDefault2">
+                            Alumno
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-5">
+                    <button class="btn btn-success btn-lg" type="submit">Añadir usuario</button>
+                </div>
+
+            </form>
+
+            <div class="mt-5" style="width:80rem">
+                <hr class="hr" />
+            </div>
+
+            <!-- Agregar usuarios desde fichero -->
+            <div class="mt-5">
+                <form class="bg-white text-secondary" style="width:50%" id="enviarFichero" action="/cargarUsuarios"
+                    enctype="multipart/form-data" method="post" th:action="@{/cargarUsuarios}" th:object="${file}">
+                    <h2>Añadir usuarios desde fichero Excel (Formato NOMBRE | CORREO)
+                        <i class="fa-solid fa-circle-info"
+                            title="El fichero almacenará todos los nuevos usuarios como alumnos"></i>
+                        <button class="btn btn-secondary" type="button" onclick="downloadTemplate()">Descargar
+                            Plantilla</button>
+                    </h2>
+
+                    <div style="width:70%">
+                        <div class="d-flex justify-content-start mb-3 mt-4">
+                            <input class="form-control" style="width: 100%;" type="file" id="file" name="file" required>
+
+                        </div>
+                        <div class="d-flex justify-content-end mt-2">
+                            <button class="btn btn-success btn-lg" style="min-width: 100px;" type="submit">Subir
+                                fichero</button>
+                        </div>
+                    </div>
+
+
+                </form>
+                <div th:if="${message}">
+                    <h3 th:text="${message}"></h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="listUsers" id="listUsers" style="width:100%">
+            <!-- TABLE DE USUARIOS -->
+            <div class="container-fluid bg-white">
+                <form id="deleteUsersForm" th:action="@{/eliminarUsuarios}" class="bg-white text-secondary mt-4"
+                    method="post">
+                    <h2>Listado de usuario</h2>
+                    <div class="d-flex justify-content-between mt-4 mb-2">
+                        <div class="d-flex justify-content-start filter-checkboxes">
+                            <div class="ml-4 fs-4">
+                                <input type="checkbox" id="professorCheckbox" name="roleFilter" value="ROLE_PROFESOR">
+                                <label for="professorCheckbox">Mostrar Profesores</label>
+                            </div>
+                            <div class="ms-4 fs-4">
+                                <input type="checkbox" id="studentCheckbox" name="roleFilter" value="ROLE_ALUMNO">
+                                <label for="studentCheckbox">Mostrar Alumnos</label>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-danger btn-lg" onclick="checkUsersSelected()">
+                            Eliminar Usuarios
+                            Seleccionados
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table id="myTable" class="table table-striped" style="min-width: 95%; max-width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="text-center">Seleccionar</th>
+                                    <th scope="col" class="text-center">Nombre</th>
+                                    <th scope="col" class="text-center">Email</th>
+                                    <th scope="col" class="text-center">Rol</th>
+                                    <th scope="col" class="text-center">Cambiar Rol</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="user : ${users}">
+                                    <td><input type="checkbox" name="userIds" th:value="${user.id}"></td>
+                                    <td class="text-center">
+                                        <a th:href="@{/anunciosUsuario?userId={userId}(userId=${user.id})}"
+                                            th:text="${user.username}" class="link-custom"></a>
+                                    </td>
+                                    <td class="text-center" th:text="${user.email}"></td>
+                                    <td class="text-center">
+                                        <span th:text="${user.rol == 'ROLE_PROFESOR' ? 'Profesor' : 'Alumno'}"></span>
+                                    </td>
+                                    <td>
+                                        <a class="btn btn-secondary"
+                                            th:onclick="'openConfirmModal(' + ${user.id} + ');'"
+                                            th:data-user-id="${user.id}" style="width: 120px;"
+                                            title="Cambiar Rol">Cambiar a <span
+                                                th:text="${user.rol == 'ROLE_PROFESOR' ? 'Alumno' : 'Profesor'}"></span>
+                                        </a>
+                                        </button>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{general :: footer}"></div>
+
+
+    <!-- Script para mostrar una vista u otra-->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const addUserBtn = document.getElementById('addUserButton');
+            const listUsersBtn = document.getElementById('listUsersButton');
+            const addUserDiv = document.getElementById('addUser');
+            const listUsersDiv = document.getElementById('listUsers');
+            const newUserForm = document.getElementById('newUserForm');
+            const fileInput = document.getElementById('file');
+
+            const fromDeleteUsers = document.getElementById('from-delete-users').value;
+            const fromDeleteUsersLocal = localStorage.getItem('fromDeleteUsers');
+
+            if (fromDeleteUsers === 'true' || fromDeleteUsersLocal === 'true') {
+                listUsersDiv.style.display = 'block';
+                addUserDiv.style.display = 'none';
+                listUsersBtn.checked = true;
+                addUserBtn.checked = false;
+                localStorage.removeItem('fromDeleteUsers');
+            } else {
+                addUserDiv.style.display = 'block';
+                listUsersDiv.style.display = 'none';
+            }
+
+            // Evento de click para el boton addUserButton
+            addUserBtn.addEventListener('click', function () {
+                addUserDiv.style.display = 'block';  // Muestra el div de addUser
+                listUsersDiv.style.display = 'none';  // Oculta el div de listUsers
+            });
+
+            // Evento de click para el boton listUsersButton
+            listUsersBtn.addEventListener('click', function () {
+                listUsersDiv.style.display = 'block'; // Muestra el div de listUsers
+                addUserDiv.style.display = 'none';    // Oculta el div de addUser
+                newUserForm.reset();  // Limpia el formulario de addUser
+                fileInput.value = '';  // Limpia el input del archivo
+            });
+        });
+
+    </script>
+
+
+    <!-- Script para mostrar el modal si hay mensajes -->
+    <script>
+        $(document).ready(function () {
+            // Comprobar si hay mensajes para mostrar
+            if ($(".modal-body p").text().trim().length > 0) {
+                $('#responseModal').modal('show');
+            }
+        });
+    </script>
+
+    <!-- Script desmarcar un checkbox si se marca el otro -->
+    <script>
+        $(document).ready(function () {
+            $('#professorCheckbox').change(function () {
+                if ($(this).is(':checked')) {
+                    $('#studentCheckbox').prop('checked', false);
+                }
+            });
+
+            $('#studentCheckbox').change(function () {
+                if ($(this).is(':checked')) {
+                    $('#professorCheckbox').prop('checked', false);
+                }
+            });
+        });
+    </script>
+
+    <!-- Script para abrir modal de cambio de rol-->
+    <script>
+        function openConfirmModal(userId) {
+            document.getElementById('changeRoleButton').setAttribute('data-user-id', userId);
+
+            // Abrir el modal
+            var myModal = new bootstrap.Modal(document.getElementById('confirmRoleModal'));
+            myModal.show();
+        }
+    </script>
+
+    <!-- Script para enviar la peticion JSON del cambio de rol-->
+    <script>
+        function changeUserRole(userId) {
+            fetch(`/actualizarRol/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la solicitud: ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    $('#confirmRoleModal').modal('hide');
+                    document.getElementById('responseMessage').textContent = data.message;
+                    localStorage.setItem('fromDeleteUsers', 'true');
+                    $('#responseModal').modal('show');
+                    $('#responseModal').on('hidden.bs.modal', function () {
+                        location.reload();
+                    });
+                })
+                .catch(error => {
+                    $('#confirmRoleModal').modal('hide');
+                    console.error('Error:', error);
+                    document.getElementById('responseMessage').textContent = error.message;
+                    $('#responseModal').modal('show');
+                });
+        }
+    </script>
+
+    <!-- Script para enviar el formulario de eliminacion de usuarios-->
+    <script>
+        //Abre el modal de confirmacion solo si hay usuarios seleccionados
+        function checkUsersSelected() {
+            // Selecciona todos los checkboxes de usuarios
+            const checkboxes = document.querySelectorAll('input[name="userIds"]:checked');
+
+            // Verifica si hay al menos un checkbox seleccionado
+            if (checkboxes.length > 0) {
+                // Mostrar el modal
+                var modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+                modal.show();
+            }
+        }
+
+        function submitDeleteForm() {
+            // Enviar el formulario
+            document.getElementById('deleteUsersForm').submit();
+        }
+    </script>
+
+    <!-- Script para descargar la plantilla de Excel de agregar usuarios-->
+    <script>
+        function downloadTemplate() {
+            window.location.href = '/descargarPlantilla';
+        }
+    </script>
+</body>
+
+</html>

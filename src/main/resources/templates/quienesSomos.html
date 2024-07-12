@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <title>Quiénes Somos</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/resources/css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="/resources/css/carousel.css" />
+    <link rel="stylesheet" type="text/css" href="/resources/css/footer.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/2.0.5/css/dataTables.bootstrap5.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
+
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.5/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.0.5/js/dataTables.bootstrap5.js"></script>
+
+
+</head>
+
+<body>
+
+    <!-- CABECERA -->
+    <div th:replace="~{general :: navbar}"></div>
+
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Quiénes Somos</h1>
+        <div class="row mb-5">
+            <div class="col-md-6">
+                <h2 class="bold text-center mb-4">¿Quién la hace?</h2>
+                <h4 class="text-secondary text-center mb-4">La Base de Datos “Representación de la infancia en la publicidad española” es una propuesta realizada
+                    por profesores del área de publicidad y de informática y alimentada por estudiantes de comunicación.
+                    Enmarcada dentro del Grupo de Innovación educativa Game [JUEGO] Metodología Aprendizaje Servicio
+                    (GIGAMAPS).</h4>
+            </div>
+            <div class="col-md-6">
+                <h2 class="bold text-center mb-4">¿Qué queremos?</h2>
+                <h4 class="text-secondary text-center mb-4">El propósito es que a través de una metodología colaborativa entre profesores y estudiantes de
+                    comunicación vayamos construyendo un base de datos en torno a la publicidad y la infancia y, de otro
+                    lado, la vayamos alimentándola a lo largo de diferentes años y pueda ser un referente en torno a
+                    este tema.</h4>
+            </div>
+        </div>
+        <div class="row mt-4 mb-5">
+            <div class="col-md-6">
+                <h2 class="bold text-center mb-4">¿Para qué?</h2>
+                <h4 class="text-secondary text-center mb-4">El objetivo es contribuir a la construcción de la memoria colectiva de un período histórico concreto
+                    de nuestro país desde el siglo XX hasta nuestros días. Esta Base de Datos, permitirá dejar
+                    constancia de nuestra evolución social y permitirá obtener visualizar, a modo de radiografía, hacia
+                    donde tiende nuestra sociedad.</h4>
+            </div>
+            <div class="col-md-6">
+                <h2 class="bold text-center mb-4">¿Qué hay?</h2>
+                <h4 class="text-secondary text-center mb-4">Se ha comenzado con las piezas publicitarias en prensa y la idea es seguir con otros medios como la
+                    televisión, la radio y los medios digitales poco a poco.</h4>
+            </div>
+        </div>
+
+        <div class="row mb-5">
+            <div class="col">
+                <h2  class="bold text-center mb-4">¿Qué puedo buscar?</h2>
+                <h4 class="text-secondary text-center mb-4">Puedes buscar anuncios por: año, temática, anunciante, medio, protagonistas y rol del anuncio. Además, puedes ver los anuncios y descargarlos pero POR FAVOR SIEMPRE INCLUYE NUESTRA FUENTE:</h4>
+                <h4 class="text-secondary text-center mb-4">Grupo de Innovación educativa Game [JUEGO] Metodología Aprendizaje Servicio (GIGAMAPS) (2022).</h4>
+                <h4 class="text-secondary text-center mb-4">Base de Datos "Representación de la infancia en la publicidad española". En <a href="https://bit.ly/InfanciaPublicidadEspañola" target="_blank">https://bit.ly/InfanciaPublicidadEspañola</a></h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div th:replace="~{general :: footer}"></div>
+</body>
+
+</html>
